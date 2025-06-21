@@ -2,26 +2,28 @@
 bin/
 obj/
 
-# Archivos de usuario de Visual Studio
+# Archivos de configuración de usuario (Visual Studio)
 *.user
 *.suo
 *.userosscache
 *.sln.docstates
+.vs/
 
-# Configuración de Visual Studio Code
+# Visual Studio Code
 .vscode/
 
-# Archivos de entorno
+# Archivos de configuración sensibles
 .env
 appsettings.Development.json
 
-# Archivos HTTP para pruebas
+# Archivos de prueba HTTP
 *.http
 
-# Archivos de log o temporales
+# Archivos temporales y de logs
 *.log
 *.tmp
-
-# Otros archivos innecesarios
 .DS_Store
 Thumbs.db
+
+# Archivos de prueba o no deseados
+WeatherForecast.cs
