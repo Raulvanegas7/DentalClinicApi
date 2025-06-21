@@ -1,0 +1,27 @@
+# Archivos y carpetas de compilación
+bin/
+obj/
+
+# Archivos de usuario de Visual Studio
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Configuración de Visual Studio Code
+.vscode/
+
+# Archivos de entorno
+.env
+appsettings.Development.json
+
+# Archivos HTTP para pruebas
+*.http
+
+# Archivos de log o temporales
+*.log
+*.tmp
+
+# Otros archivos innecesarios
+.DS_Store
+Thumbs.db
