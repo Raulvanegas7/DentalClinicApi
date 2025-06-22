@@ -4,8 +4,6 @@ using System.Threading.Tasks;
 using DentalClinicApi.Models;
 using DentalClinicApi.Services;
 using Microsoft.AspNetCore.Mvc;
-using Swashbuckle.AspNetCore.Annotations;
-
 
 namespace DentalClinicApi.Controllers
 {
@@ -21,9 +19,6 @@ namespace DentalClinicApi.Controllers
         }
 
         [HttpGet]
-        [SwaggerOperation(Summary = "Obtener todos los pacientes",
-            Description = "Retorna una lista de todos los pacientes registrados")]
-        [SwaggerResponse(200, "Lista de pacientes obtenida exitosamente", typeof(List<Patient>))]
         public async Task<ActionResult<List<Patient>>> GetAll()
         {
             var patients = await _patientService.GetAllPatients();
@@ -31,9 +26,6 @@ namespace DentalClinicApi.Controllers
         }
 
         [HttpGet("{id}")]
-        [SwaggerOperation(Summary = "Obtener un paciente por ID")]
-        [SwaggerResponse(200, "Paciente encontrado", typeof(Patient))]
-        [SwaggerResponse(404, "Paciente no encontrado")]
         public async Task<ActionResult<Patient>> GetById(string id)
         {
             var patient = await _patientService.GetOneById(id);
@@ -44,9 +36,6 @@ namespace DentalClinicApi.Controllers
         }
 
         [HttpPost]
-        [SwaggerOperation(Summary = "Registrar un nuevo paciente")]
-        [SwaggerResponse(201, "Paciente creado exitosamente")]
-        [SwaggerResponse(400, "Datos inválidos")]   
         public async Task<ActionResult> Create([FromBody] Patient newPatient)
         {
             await _patientService.CreatePatient(newPatient);
