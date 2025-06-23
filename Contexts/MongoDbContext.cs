@@ -21,5 +21,11 @@ namespace DentalClinicApi.Contexts
 
         public IMongoCollection<Patient> Patients =>
             _database.GetCollection<Patient>("Patients");
+            
+        public IMongoCollection<Dentist> Dentists =>
+            _database.GetCollection<Dentist>("Dentists");
+
+        public IMongoCollection<Service> Services =>
+            _database.GetCollection<Service>("Services");
     }
 }

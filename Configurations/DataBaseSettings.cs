@@ -10,5 +10,7 @@ namespace DentalClinicApi.Configurations
         public string ConnectionString { get; set; } = null!;
         public string DatabaseName { get; set; } = null!;
         public string PatientsCollectionName { get; set; } = null!;
+        public string DentistsCollectionName { get; set; } = null!;
+        public string ServicesCollectionName { get; set; } = null!;
     }
 }

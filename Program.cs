@@ -1,5 +1,6 @@
 using DentalClinicApi.Configurations;
 using DentalClinicApi.Contexts;
+using DentalClinicApi.Models;
 using DentalClinicApi.Services;
 using Microsoft.Extensions.Options;
 
@@ -12,6 +13,7 @@ builder.Services.Configure<DataBaseSettings>(
 
 builder.Services.AddSingleton<MongoDbContext>();
 builder.Services.AddSingleton<PatientService>();
+builder.Services.AddSingleton<DentistService>();
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -24,7 +26,7 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    // app.UseSwaggerUI();
+    app.UseSwaggerUI();
 }
 
 app.UseHttpsRedirection();
