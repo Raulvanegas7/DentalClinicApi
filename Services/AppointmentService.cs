@@ -24,7 +24,7 @@ namespace DentalClinicApi.Services
             return await _appointmentsCollection.Find(new BsonDocument()).ToListAsync();
         }
 
-        public async Task<Appointment> GetOneBiId(string id)
+        public async Task<Appointment> GetOneById(string id)
         {
             var filter = Builders<Appointment>.Filter.Eq(x => x.Id, id);
             var result = await _appointmentsCollection.Find(filter).FirstOrDefaultAsync();
