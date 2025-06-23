@@ -27,5 +27,8 @@ namespace DentalClinicApi.Contexts
 
         public IMongoCollection<Service> Services =>
             _database.GetCollection<Service>("Services");
+
+        public IMongoCollection<Appointment> Appointments =>
+            _database.GetCollection<Appointment>("Appointments");
     }
 }

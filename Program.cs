@@ -15,6 +15,7 @@ builder.Services.AddSingleton<MongoDbContext>();
 builder.Services.AddSingleton<PatientService>();
 builder.Services.AddSingleton<DentistService>();
 builder.Services.AddSingleton<ServiceService>();
+builder.Services.AddSingleton<AppointmentService>();
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

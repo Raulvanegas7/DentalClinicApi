@@ -12,5 +12,6 @@ namespace DentalClinicApi.Configurations
         public string PatientsCollectionName { get; set; } = null!;
         public string DentistsCollectionName { get; set; } = null!;
         public string ServicesCollectionName { get; set; } = null!;
+        public string AppointmentsCollectionName { get; set; } = null!;
     }
 }
