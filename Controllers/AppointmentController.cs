@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using DentalClinicApi.Dtos;
 using DentalClinicApi.Models;
 using DentalClinicApi.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -11,7 +12,7 @@ using Microsoft.Extensions.Logging;
 namespace DentalClinicApi.Controllers
 {
     [ApiController]
-    [Route("Api/[controller]")]
+    [Route("api/[controller]")]
     public class AppointmentController : ControllerBase
     {
         private readonly AppointmentService _appointmentService;
@@ -39,18 +40,18 @@ namespace DentalClinicApi.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult> create([FromBody] Appointment newAppointment)
+        public async Task<ActionResult> Create([FromBody] Appointment newAppointment)
         {
-            var findpatient = await _appointmentService.GetOneById(newAppointment.PatientId);
-            if (findpatient == null)
+            var patientExist = await _appointmentService.PatientExists(newAppointment.PatientId);
+            if (!patientExist)
                 return BadRequest("El paciente no existe");
 
-            var findDentist = await _appointmentService.GetOneById(newAppointment.DentistId);
-            if (findDentist == null)
+            var dentistExist = await _appointmentService.DentistExists(newAppointment.DentistId);
+            if (!dentistExist)
                 return BadRequest("El odontologo no existe");
 
-            var findService = await _appointmentService.GetOneById(newAppointment.ServiceId);
-            if (findService == null)
+            var serviceExist = await _appointmentService.ServiceExists(newAppointment.ServiceId);
+            if (!serviceExist)
                 return BadRequest("El servicio no existe");
 
             await _appointmentService.CreateAppointment(newAppointment);
@@ -78,6 +79,13 @@ namespace DentalClinicApi.Controllers
 
             await _appointmentService.DeleteAppointment(id);
             return NoContent();
+        }
+
+        [HttpGet("detailed")]
+        public async Task<ActionResult<List<AppointmentDetailDto>>> AppointmentWithDetails()
+        {
+            var appointmentDetails = await _appointmentService.GetDetailedAppointments();
+            return Ok(appointmentDetails);
         } 
     }
 }

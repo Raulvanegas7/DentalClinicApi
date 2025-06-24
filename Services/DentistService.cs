@@ -21,7 +21,7 @@ namespace DentalClinicApi.Services
 
         public async Task<List<Dentist>> GetAllDentists()
         {
-            return await _dentistsCollection.Find(new BsonDocument()).ToListAsync();
+            return await _dentistsCollection.Find(x => true).ToListAsync();
         }
 
         public async Task<Dentist> GetOneById(string id)

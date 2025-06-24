@@ -20,7 +20,7 @@ namespace DentalClinicApi.Services
 
         public async Task<List<Service>> GetAllServices()
         {
-            return await _servicesCollection.Find(new BsonDocument()).ToListAsync();
+            return await _servicesCollection.Find(x => true).ToListAsync();
         }
 
         public async Task<Service> GetOneById(string id)
