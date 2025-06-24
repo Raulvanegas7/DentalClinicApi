@@ -21,36 +21,30 @@ namespace DentalClinicApi.Services
             _jwtService = jwtService;
         }
 
-        public async Task<bool> IsEmailTaken(string email)
+        public async Task<string?> RegisterUser(RegisterDto dto)
         {
-            return await _usersCollection.Find(u => u.Email == email).AnyAsync();
-        }
-
-        public async Task<string?> Register(RegisterDto dto)
-        {
-            if (await IsEmailTaken(dto.Email))
+            var existingUser = await _usersCollection.Find(u => u.Email == dto.Email).FirstOrDefaultAsync();
+            if (existingUser != null)
                 return null;
-
-            var hashedPassword = BCrypt.Net.BCrypt.HashPassword(dto.Password);
 
             var newUser = new User
             {
                 Username = dto.Username,
                 Email = dto.Email,
-                PasswordHash = hashedPassword,
-                Role = "user"
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
+                Role = dto.Role ?? "user"
             };
 
             await _usersCollection.InsertOneAsync(newUser);
-
-            return _jwtService.GenerateToken(newUser); // Retorna el token JWT directamente
+            return _jwtService.GenerateToken(newUser);
         }
 
-        public async Task<string?> SignIn(LoginDto dto)
+        // Login
+        public async Task<string?> Login(LoginDto dto)
         {
             var user = await _usersCollection.Find(u => u.Email == dto.Email).FirstOrDefaultAsync();
-            if (user == null || !BCrypt.Net.BCrypt.Verify(dto.Password, dto.Password))
-                throw new Exception("Credenciales inválidas");
+            if (user == null || !BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
+                return null;
 
             return _jwtService.GenerateToken(user);
         }
