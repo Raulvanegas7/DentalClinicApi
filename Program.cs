@@ -16,6 +16,8 @@ builder.Services.AddSingleton<PatientService>();
 builder.Services.AddSingleton<DentistService>();
 builder.Services.AddSingleton<ServiceService>();
 builder.Services.AddSingleton<AppointmentService>();
+builder.Services.AddSingleton<UserService>();
+builder.Services.AddSingleton<JwtService>();
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

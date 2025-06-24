@@ -30,5 +30,8 @@ namespace DentalClinicApi.Contexts
 
         public IMongoCollection<Appointment> Appointments =>
             _database.GetCollection<Appointment>("Appointments");
+
+        public IMongoCollection<User> Users =>
+            _database.GetCollection<User>("Users");
     }
 }
