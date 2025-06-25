@@ -79,6 +79,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseMiddleware<DentalClinicApi.Middlewares.ErrorHandlingMiddleware>();
+
 app.UseHttpsRedirection();
 
 app.UseAuthentication();
