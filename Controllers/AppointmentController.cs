@@ -8,6 +8,7 @@ using DentalClinicApi.Models;
 using DentalClinicApi.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Authorization;
 
 namespace DentalClinicApi.Controllers
 {
@@ -58,6 +59,7 @@ namespace DentalClinicApi.Controllers
             return CreatedAtAction(nameof(GetById), new { id = newAppointment.Id }, newAppointment);
         }
 
+        [Authorize(Roles = "admin")]
         [HttpPut("{id}")]
         public async Task<ActionResult> Update(string id, [FromBody] Appointment updateAppointment)
         {
@@ -81,6 +83,7 @@ namespace DentalClinicApi.Controllers
             return NoContent();
         }
 
+        [Authorize(Roles = "admin")]
         [HttpGet("detailed")]
         public async Task<ActionResult<List<AppointmentDetailDto>>> AppointmentWithDetails()
         {
