@@ -25,6 +25,15 @@ namespace DentalClinicApi.Models
         [BsonElement("date")]
         public DateTime Date { get; set; }
 
+        [BsonElement("reason")]
+        public string Reason { get; set; } = string.Empty;
+
+        [BsonElement("status")]  
+        public string Status { get; set; } = "Scheduled";
+
+        [BsonElement("createdAt")]  
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
         [BsonElement("notes")]
         public string Notes { get; set; } = string.Empty;
     }
