@@ -57,11 +57,11 @@ namespace DentalClinicApi.Services
 
         public async Task<List<AppointmentDetailDto>> GetDetailedAppointments()
         {
-            var appointments = await _appointmentsCollection.Find(_ => true).ToListAsync();
+            var appointments = await _appointmentsCollection.Find(x => true).ToListAsync();
 
-            var patients = await _patientsCollection.Find(_ => true).ToListAsync();
-            var dentists = await _dentistsCollection.Find(_ => true).ToListAsync();
-            var services = await _servicesCollection.Find(_ => true).ToListAsync();
+            var patients = await _patientsCollection.Find(x => true).ToListAsync();
+            var dentists = await _dentistsCollection.Find(x => true).ToListAsync();
+            var services = await _servicesCollection.Find(x => true).ToListAsync();
 
             var result = appointments.Select(app =>
             {
