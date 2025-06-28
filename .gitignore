@@ -1,30 +1,23 @@
-# Archivos y carpetas de compilación
-bin/
-obj/
-
-# Archivos de configuración de usuario (Visual Studio)
+# === BACKEND ===
+backend/bin/
+backend/obj/
 *.user
 *.suo
-*.userosscache
 *.sln.docstates
-.vs/
-
-# Visual Studio Code
-.vscode/
-
-# Archivos de configuración sensibles
-.env
-appsettings.Development.json
-
-# Archivos de prueba HTTP
+backend/.vs/
 *.http
+backend/appsettings.Development.json
 
-# Archivos temporales y de logs
-*.log
-*.tmp
+# === FRONTEND ===
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+
+# === GENERAL ===
+.vscode/
 .DS_Store
 Thumbs.db
-
-# Archivos de prueba o no deseados
-WeatherForecast.cs
-Borrador.txt
+*.log
+*.tmp
+*.exe
+*.dll
