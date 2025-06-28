@@ -33,5 +33,8 @@ namespace DentalClinicApi.Contexts
 
         public IMongoCollection<User> Users =>
             _database.GetCollection<User>("Users");
+
+        public IMongoCollection<ClinicalRecord> ClinicalRecords =>
+            _database.GetCollection<ClinicalRecord>("ClinicalRecords");
     }
 }
