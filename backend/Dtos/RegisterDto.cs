@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
+using backend.Enums;
 
 namespace DentalClinicApi.Dtos
 {
@@ -20,6 +21,7 @@ namespace DentalClinicApi.Dtos
         [MinLength(6, ErrorMessage = "La contraseña debe tener al menos 6 caracteres.")]
         public string Password { get; set; } = string.Empty;
 
-        public string? Role { get; set; }
+        [Required(ErrorMessage = "El rol es obligatorio.")]
+        public UserRole? Role { get; set; }
     }
 }
