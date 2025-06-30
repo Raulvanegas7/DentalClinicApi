@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using backend.Enums;
 using DentalClinicApi.Contexts;
 using DentalClinicApi.Dtos;
 using DentalClinicApi.Models;
@@ -32,7 +33,7 @@ namespace DentalClinicApi.Services
                 Username = dto.Username,
                 Email = dto.Email,
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
-                Role = dto.Role ?? "user"
+                Role = dto.Role ?? UserRole.User
             };
 
             await _usersCollection.InsertOneAsync(newUser);

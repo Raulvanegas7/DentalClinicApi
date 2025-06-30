@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using backend.Enums;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
@@ -23,6 +24,10 @@ namespace DentalClinicApi.Models
         public string PasswordHash { get; set; } = string.Empty;
 
         [BsonElement("role")]
-        public string Role { get; set; } = "user"; // o "admin"
+        [BsonRepresentation(MongoDB.Bson.BsonType.String)]
+        public UserRole Role { get; set; } = UserRole.User;
+
+        [BsonElement("status")]
+        public string Status { get; set; }
     }
 }

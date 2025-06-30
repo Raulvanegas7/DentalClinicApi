@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using backend.Enums;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
@@ -25,16 +26,13 @@ namespace DentalClinicApi.Models
         [BsonElement("date")]
         public DateTime Date { get; set; }
 
-        [BsonElement("reason")]
-        public string Reason { get; set; } = string.Empty;
-
-        [BsonElement("status")]  
-        public string Status { get; set; } = "Scheduled";
-
-        [BsonElement("createdAt")]  
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        [BsonElement("status")]
+        [BsonRepresentation(BsonType.String)]
+        public AppointmentStatus Status { get; set; } = AppointmentStatus.Scheduled;
 
         [BsonElement("notes")]
         public string Notes { get; set; } = string.Empty;
+        [BsonElement("createdAt")]  
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 }
