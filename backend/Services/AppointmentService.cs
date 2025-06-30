@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Threading.Tasks;
+using backend.Dtos;
+using backend.Enums;
 using DentalClinicApi.Contexts;
 using DentalClinicApi.Dtos;
 using DentalClinicApi.Models;
@@ -38,16 +40,48 @@ namespace DentalClinicApi.Services
             return result;
         }
 
-        public async Task CreateAppointment(Appointment newAppointment)
+        public async Task<List<Appointment>> GetAppointmentsByDentist(string dentistId)
         {
+            var filter = Builders<Appointment>.Filter.Eq(x => x.DentistId, dentistId);
+            var result = await _appointmentsCollection.Find(filter).ToListAsync();
+            return result;
+        }
+        public async Task CreateAppointment(CreateAppointmentDto dto)
+        {
+            var newAppointment = new Appointment
+            {
+                PatientId = dto.PatientId,
+                DentistId = dto.DentistId,
+                ServiceId = dto.ServiceId,
+                Date = dto.Date,
+                Notes = dto.Notes,
+                Status = dto.Status ?? AppointmentStatus.Scheduled
+            };
+
             await _appointmentsCollection.InsertOneAsync(newAppointment);
         }
 
-        public async Task UpdateApp(string id, Appointment updateApp)
+
+        public async Task UpdateApp(string id, UpdateAppointmentDto dto)
         {
             var filter = Builders<Appointment>.Filter.Eq(x => x.Id, id);
-            await _appointmentsCollection.ReplaceOneAsync(filter, updateApp);
+            var updateApp = Builders<Appointment>.Update
+            .Set(x => x.Date, dto.Date)
+            .Set(x => x.Notes, dto.Notes)
+            .Set(x => x.Status, dto.Status ?? AppointmentStatus.Scheduled);
+
+            await _appointmentsCollection.UpdateOneAsync(filter, updateApp);
         }
+
+        public async Task MarkCompleteAsync(string id)
+        {
+            var filter = Builders<Appointment>.Filter.Eq(x => x.Id, id);
+            var update = Builders<Appointment>.Update
+                .Set(x => x.Status, AppointmentStatus.Completed);
+
+            await _appointmentsCollection.UpdateOneAsync(filter, update);
+        }
+
 
         public async Task DeleteAppointment(string id)
         {
