@@ -1,20 +1,15 @@
-import React from 'react';
+import { Link } from 'react-router-dom';
 
-const Navbar: React.FC = () => {
+const Navbar = () => {
   return (
     <nav className="bg-blue-600 text-white px-4 py-3 flex justify-between items-center">
-      <div className="text-xl font-bold">DentalClinic</div>
-      <ul className="flex gap-4">
-        <li>
-          <a href="#" className="hover:text-gray-300">Inicio</a>
-        </li>
-        <li>
-          <a href="#" className="hover:text-gray-300">Servicios</a>
-        </li>
-        <li>
-          <a href="#" className="hover:text-gray-300">Contacto</a>
-        </li>
-      </ul>
+      <div className="font-bold text-xl">DentalClinic</div>
+      <div className="space-x-4">
+        <Link to="/">Home</Link>
+        <Link to="/appointments">Appointments</Link>
+        <Link to="/login">Login</Link>
+        <Link to="/signup">Sign Up</Link>
+      </div>
     </nav>
   );
 };

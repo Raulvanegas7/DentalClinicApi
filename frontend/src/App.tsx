@@ -1,19 +1,19 @@
-import { useState } from 'react'
-import Navbar from './components/Navbar'
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import CreateAppointment from './pages/CreateAppointment'
+import Login from './pages/Login'
+import Signup from './pages/Signup'
+import Home from './pages/Home'
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-      <Navbar />
-      <main className="p-4">
-        <h1 className="text-2xl font-bold mb-4">Página de Inicio</h1>
-        <button onClick={() => setCount(count + 1)} className="px-4 py-2 bg-green-500 text-white rounded">
-          Count is {count}
-        </button>
-      </main>
-    </>
+    <Router>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/appointments/new" element={<CreateAppointment />} />
+      </Routes>
+    </Router>
   )
 }
 
