@@ -7,6 +7,7 @@ backend/obj/
 backend/.vs/
 *.http
 backend/appsettings.Development.json
+Borrador/
 
 # === FRONTEND ===
 frontend/node_modules/
