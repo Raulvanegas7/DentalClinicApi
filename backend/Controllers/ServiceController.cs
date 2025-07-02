@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using DentalClinicApi.Models;
 using DentalClinicApi.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
@@ -22,6 +23,7 @@ namespace DentalClinicApi.Controllers
         }
 
         [HttpGet]
+        [AllowAnonymous]
         public async Task<ActionResult<List<Service>>> GetAll()
         {
             var services = await _serviceService.GetAllServices();
@@ -29,6 +31,7 @@ namespace DentalClinicApi.Controllers
         }
 
         [HttpGet("{id}")]
+        [AllowAnonymous]
         public async Task<ActionResult<Service>> GetById(string id)
         {
             var service = await _serviceService.GetOneById(id);
@@ -39,6 +42,7 @@ namespace DentalClinicApi.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult> Create([FromBody] Service newService)
         {
             await _serviceService.CreateService(newService);
@@ -46,6 +50,7 @@ namespace DentalClinicApi.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult> Update(string id, Service updateService)
         {
             var findService = await _serviceService.GetOneById(id);
@@ -58,6 +63,7 @@ namespace DentalClinicApi.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult> Delete(string id)
         {
             var findService = await _serviceService.GetOneById(id);

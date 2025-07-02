@@ -5,6 +5,6 @@ namespace backend.Enums
         Admin,
         Receptionist,
         Dentist,
-        User
+        Patient
     }
 }

@@ -33,7 +33,7 @@ namespace DentalClinicApi.Services
                 Username = dto.Username,
                 Email = dto.Email,
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
-                Role = dto.Role ?? UserRole.User
+                Role = dto.Role 
             };
 
             await _usersCollection.InsertOneAsync(newUser);

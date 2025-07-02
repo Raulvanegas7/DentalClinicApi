@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using DentalClinicApi.Dtos;
 using DentalClinicApi.Models;
 using DentalClinicApi.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DentalClinicApi.Controllers
@@ -21,6 +22,7 @@ namespace DentalClinicApi.Controllers
         }
 
         [HttpGet("byPatientId/{patientId}")]
+        [Authorize(Roles = "Admin,Receptionist,Dentist")]
         public async Task<ActionResult<List<ClinicalRecord>>> GetByPatientId(string patientId)
         {
             var records = await _clinicalRecordService.GetByPatientIdAsync(patientId);
@@ -28,6 +30,7 @@ namespace DentalClinicApi.Controllers
         }
 
         [HttpGet("byAppointmentId/{appointmentId}")]
+        [Authorize(Roles = "Admin,Receptionist,Dentist")]
         public async Task<ActionResult<ClinicalRecord?>> GetByAppointmentId(string appointmentId)
         {
             var record = await _clinicalRecordService.GetByAppointmentIdAsync(appointmentId);
@@ -38,8 +41,15 @@ namespace DentalClinicApi.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Dentist")]
         public async Task<ActionResult> CreateClinicalRecord([FromBody] CreateClinicalRecordDto dto)
         {
+            if (!await _clinicalRecordService.PatientExists(dto.PatientId))
+                return BadRequest("El paciente no existe.");
+
+            if (!await _clinicalRecordService.AppointmentExists(dto.AppointmentId))
+                return BadRequest("La cita no existe.");
+
             var newRecord = new ClinicalRecord
             {
                 AppointmentId = dto.AppointmentId,
@@ -49,9 +59,12 @@ namespace DentalClinicApi.Controllers
                 Treatment = dto.Treatment,
                 Notes = dto.Notes
             };
-            
+
             await _clinicalRecordService.CreateAsync(newRecord);
-            return CreatedAtAction(nameof(GetByAppointmentId), new { appointmentId = newRecord.AppointmentId}, newRecord);
+
+            return CreatedAtAction(nameof(GetByAppointmentId),
+             new { appointmentId = newRecord.AppointmentId },
+             newRecord);
         }
     }
 }

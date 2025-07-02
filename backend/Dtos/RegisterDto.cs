@@ -22,6 +22,7 @@ namespace DentalClinicApi.Dtos
         public string Password { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "El rol es obligatorio.")]
-        public UserRole? Role { get; set; }
+        [EnumDataType(typeof(UserRole), ErrorMessage = "El rol especificado no es válido.")]
+        public UserRole Role { get; set; }
     }
 }

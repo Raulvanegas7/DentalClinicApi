@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using DentalClinicApi.Models;
 using DentalClinicApi.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DentalClinicApi.Controllers
@@ -19,6 +20,7 @@ namespace DentalClinicApi.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "Admin,Receptionist")]
         public async Task<ActionResult<List<Patient>>> GetAll()
         {
             var patients = await _patientService.GetAllPatients();
@@ -26,6 +28,7 @@ namespace DentalClinicApi.Controllers
         }
 
         [HttpGet("{id}")]
+        [Authorize(Roles = "Admin,Receptionist")]
         public async Task<ActionResult<Patient>> GetById(string id)
         {
             var patient = await _patientService.GetOneById(id);
@@ -36,6 +39,7 @@ namespace DentalClinicApi.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin,Receptionist")]
         public async Task<ActionResult> Create([FromBody] Patient newPatient)
         {
             await _patientService.CreatePatient(newPatient);
@@ -43,6 +47,7 @@ namespace DentalClinicApi.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "Admin,Receptionist")]
         public async Task<ActionResult> Update(string id, Patient updatePatient)
         {
             var existingPatient = await _patientService.GetOneById(id);
@@ -55,6 +60,7 @@ namespace DentalClinicApi.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult> Delete(string id)
         {
             var existingPatient = await _patientService.GetOneById(id);

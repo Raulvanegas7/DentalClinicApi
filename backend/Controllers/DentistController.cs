@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using DentalClinicApi.Models;
 using DentalClinicApi.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DentalClinicApi.Controllers
@@ -19,6 +20,7 @@ namespace DentalClinicApi.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<List<Dentist>>> GetAll()
         {
             var dentists = await _dentistService.GetAllDentists();
@@ -26,6 +28,7 @@ namespace DentalClinicApi.Controllers
         }
 
         [HttpGet("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<Dentist>> GetById(string id)
         {
             var dentist = await _dentistService.GetOneById(id);
@@ -36,6 +39,7 @@ namespace DentalClinicApi.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult> Create([FromBody] Dentist newDentist)
         {
             await _dentistService.CreateDentist(newDentist);
@@ -43,6 +47,7 @@ namespace DentalClinicApi.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult> Update(string id, [FromBody] Dentist updateDentist)
         {
             var findDentist = await _dentistService.GetOneById(id);
@@ -55,12 +60,13 @@ namespace DentalClinicApi.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult> Delete(string id)
         {
             var findDentist = await _dentistService.GetOneById(id);
             if (findDentist == null)
                 return NotFound();
-                
+
             await _dentistService.DeleteDentist(id);
             return NoContent();
         }

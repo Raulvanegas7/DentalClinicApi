@@ -30,7 +30,7 @@ namespace DentalClinicApi.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = "admin,receptionist")]
+        [Authorize(Roles = "Admin,Receptionist")]
         public async Task<ActionResult<List<Appointment>>> GetAll()
         {
             var appointments = await _appointmentService.GetAllAppointments();
@@ -38,7 +38,7 @@ namespace DentalClinicApi.Controllers
         }
 
         [HttpGet("my-appointments")]
-        [Authorize(Roles = "dentist")]
+        [Authorize(Roles = "Dentist")]
         public async Task<ActionResult<List<Appointment>>> GetMyAppointments()
         {
             var dentistId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -48,7 +48,7 @@ namespace DentalClinicApi.Controllers
 
 
         [HttpGet("{id}")]
-        [Authorize(Roles = "admin,receptionist,dentist")]
+        [Authorize(Roles = "Admin,Receptionist,Dentist")]
         public async Task<ActionResult<Appointment>> GetById(string id)
         {
             var appointment = await _appointmentService.GetOneById(id);
@@ -59,7 +59,7 @@ namespace DentalClinicApi.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "admin,receptionist")]
+        [Authorize(Roles = "Admin,Receptionist")]
         public async Task<ActionResult> Create([FromBody] CreateAppointmentDto dto)
         {
             var patientExist = await _appointmentService.PatientExists(dto.PatientId);
@@ -79,7 +79,7 @@ namespace DentalClinicApi.Controllers
         }
 
         [HttpPut("{id}")]
-        [Authorize(Roles = "admin,receptionist")]
+        [Authorize(Roles = "Admin,Receptionist")]
         public async Task<ActionResult> Update(string id, [FromBody] UpdateAppointmentDto dto)
         {
             var findApp = await _appointmentService.GetOneById(id);
@@ -91,7 +91,7 @@ namespace DentalClinicApi.Controllers
         }
 
         [HttpPatch("{id}/complete")]
-        [Authorize(Roles = "dentist")]
+        [Authorize(Roles = "Dentist")]
         public async Task<ActionResult> MarkComplete(string id)
         {
             var dentistId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -108,7 +108,7 @@ namespace DentalClinicApi.Controllers
 
 
         [HttpDelete("{id}")]
-        [Authorize(Roles = "admin")]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult> Delete(string id)
         {
             var findApp = await _appointmentService.GetOneById(id);
@@ -120,7 +120,7 @@ namespace DentalClinicApi.Controllers
         }
 
         [HttpGet("detailed")]
-        [Authorize(Roles = "admin")]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<List<AppointmentDetailDto>>> AppointmentWithDetails()
         {
             var appointmentDetails = await _appointmentService.GetDetailedAppointments();
