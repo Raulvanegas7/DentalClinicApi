@@ -11,14 +11,14 @@ Actualmente solo incluye backend funcional, el frontend se implementará en el f
 
 ```
 DentalClinicApi/
+├── Configurations/
+├── Contexts/
 ├── Controllers/
-├── Entities/
+├── Dtos/
 ├── Models/
 ├── Services/
-├── Routes/
-├── DTOs/
-├── Program.cs
 ├── appsettings.json
+├── Program.cs
 └── ...
 ```
 
