@@ -23,7 +23,7 @@ builder.Services.AddSingleton<DentistService>();
 builder.Services.AddSingleton<ServiceService>();
 builder.Services.AddSingleton<AppointmentService>();
 builder.Services.AddSingleton<UserService>();
-builder.Services.AddSingleton<ClinicalRecord>();
+builder.Services.AddSingleton<ClinicalRecordService>();
 builder.Services.AddSingleton<JwtService>();
 
 
