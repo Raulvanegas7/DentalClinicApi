@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using backend.Dtos;
 using DentalClinicApi.Dtos;
 using DentalClinicApi.Models;
 using DentalClinicApi.Services;
@@ -65,6 +66,15 @@ namespace DentalClinicApi.Controllers
             return CreatedAtAction(nameof(GetByAppointmentId),
              new { appointmentId = newRecord.AppointmentId },
              newRecord);
+        }
+
+        [HttpGet("detail/{id}")]
+        [Authorize(Roles = "Admin,Receptionist,Dentist")]
+        public async Task<ActionResult<ClinicalRecordDetailedDto>> GetClinicalWithDetails(string id)
+        {
+            var findCR = await _clinicalRecordService.GetClinicalWithDetailsAsync(id);
+            if (findCR == null) return NotFound();
+            return Ok(findCR);
         }
     }
 }

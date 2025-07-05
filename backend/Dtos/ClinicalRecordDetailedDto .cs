@@ -7,31 +7,31 @@ namespace backend.Dtos
 {
     public class ClinicalRecordDetailedDto
     {
-        public string Id { get; set; }
+        public string Id { get; set; } = string.Empty;
         public string Diagnosis { get; set; }
         public string Treatment { get; set; }
         public string Notes { get; set; }
         public DateTime CreatedAt { get; set; }
-        public AppoinmentMiniDto Appointment { get; set; }
-        public PatientMiniDto Patient { get; set; }
-        public DentistMiniDto Dentist { get; set; }
+        public AppoinmentMiniDtoCr Appointment { get; set; }
+        public PatientMiniDtoCr Patient { get; set; }
+        public DentistMiniDtoCr Dentist { get; set; }
     }
 
-    public class AppoinmentMiniDto
+    public class AppoinmentMiniDtoCr
     {
         public string Id { get; set; }
         public DateTime Date { get; set; }
-        public ServiceDto Service { get; set; }
+        public ServiceDtoCr Service { get; set; }
     }
 
-    public class ServiceDto
+    public class ServiceDtoCr
     {
         public string Id { get; set; }
         public string Name  { get; set; }
         public decimal Price { get; set; }
     }
 
-    public class PatientMiniDto
+    public class PatientMiniDtoCr
     {
         public string Id { get; set; }
         public string Name { get; set; }
@@ -39,7 +39,7 @@ namespace backend.Dtos
         public string Phone { get; set; }
     }
 
-    public class DentistMiniDto
+    public class DentistMiniDtoCr
     {
         public string Id { get; set; }
         public string Name { get; set; }
