@@ -37,6 +37,11 @@ namespace DentalClinicApi.Services
             return await _clinicalRecordsCollection.Find(x => x.AppointmentId == appointmentId).FirstOrDefaultAsync();
         }
 
+        public async Task<List<ClinicalRecord>> GetAllClinicalRecordsAsync()
+        {
+            return await _clinicalRecordsCollection.Find(x => true).ToListAsync();
+        }
+
         public async Task CreateAsync(ClinicalRecord newClinicalRecord)
         {
             await _clinicalRecordsCollection.InsertOneAsync(newClinicalRecord);

@@ -41,8 +41,16 @@ namespace DentalClinicApi.Controllers
             return Ok(record);
         }
 
+        [HttpGet]
+        [Authorize(Roles = "Admin,Receptionist,Dentist")]
+        public async Task<ActionResult<List<ClinicalRecord>>> GetAllClinicalRecords()
+        {
+            var allrecords = await _clinicalRecordService.GetAllClinicalRecordsAsync();
+            return Ok(allrecords);
+        }
+
         [HttpPost]
-        [Authorize(Roles = "Dentist")]
+        [Authorize(Roles = "Admin,Dentist")]
         public async Task<ActionResult> CreateClinicalRecord([FromBody] CreateClinicalRecordDto dto)
         {
             if (!await _clinicalRecordService.PatientExists(dto.PatientId))
@@ -50,6 +58,11 @@ namespace DentalClinicApi.Controllers
 
             if (!await _clinicalRecordService.AppointmentExists(dto.AppointmentId))
                 return BadRequest("La cita no existe.");
+
+            if (await _clinicalRecordService.GetByAppointmentIdAsync(dto.AppointmentId) != null)
+            {
+                return BadRequest("Ya existe una historia clínica para esta cita.");
+            }
 
             var newRecord = new ClinicalRecord
             {
