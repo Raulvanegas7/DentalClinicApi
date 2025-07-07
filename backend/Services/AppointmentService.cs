@@ -46,7 +46,7 @@ namespace DentalClinicApi.Services
             var result = await _appointmentsCollection.Find(filter).ToListAsync();
             return result;
         }
-        public async Task CreateAppointment(CreateAppointmentDto dto)
+        public async Task<Appointment> CreateAppointment(CreateAppointmentDto dto)
         {
             var newAppointment = new Appointment
             {
@@ -55,23 +55,47 @@ namespace DentalClinicApi.Services
                 ServiceId = dto.ServiceId,
                 Date = dto.Date,
                 Notes = dto.Notes,
-                Status = dto.Status ?? AppointmentStatus.Scheduled
+                Status = AppointmentStatus.Scheduled,
+                CreatedAt = DateTime.UtcNow
             };
 
             await _appointmentsCollection.InsertOneAsync(newAppointment);
+            return newAppointment;
         }
 
 
-        public async Task UpdateApp(string id, UpdateAppointmentDto dto)
+        public async Task PartialUpdateBasicAsync(string id, UpdateAppointmentDto dto)
         {
             var filter = Builders<Appointment>.Filter.Eq(x => x.Id, id);
-            var updateApp = Builders<Appointment>.Update
-            .Set(x => x.Date, dto.Date)
-            .Set(x => x.Notes, dto.Notes)
-            .Set(x => x.Status, dto.Status ?? AppointmentStatus.Scheduled);
 
-            await _appointmentsCollection.UpdateOneAsync(filter, updateApp);
+            var update = Builders<Appointment>.Update; 
+            UpdateDefinition<Appointment>? finalUpdate = null;
+
+            if (dto.Date.HasValue)
+                finalUpdate = update.Set(x => x.Date, dto.Date.Value);
+
+            if (!string.IsNullOrWhiteSpace(dto.Notes))
+            {
+                if (finalUpdate == null)
+                    finalUpdate = update.Set(x => x.Notes, dto.Notes);
+                else
+                    finalUpdate = finalUpdate.Set(x => x.Notes, dto.Notes);
+            }
+
+            if (dto.Status.HasValue)
+            {
+                if (finalUpdate == null)
+                    finalUpdate = update.Set(x => x.Status, dto.Status.Value);
+                else
+                    finalUpdate = finalUpdate.Set(x => x.Status, dto.Status.Value);
+            }
+
+            if (finalUpdate == null)
+                return; 
+
+            await _appointmentsCollection.UpdateOneAsync(filter, finalUpdate);
         }
+
 
         public async Task MarkCompleteAsync(string id)
         {
@@ -149,6 +173,37 @@ namespace DentalClinicApi.Services
             var filter = Builders<Service>.Filter.Eq(x => x.Id, serviceId);
             return await _servicesCollection.Find(filter).AnyAsync();
         }
+
+        public async Task<bool> IsDentistAvailableAsync(string dentistId, DateTime newStart)
+        {
+            var newEnd = newStart.AddMinutes(30);
+
+            var conflict = await _appointmentsCollection
+                .Find(a =>
+                    a.DentistId == dentistId &&
+                    a.Date < newEnd &&
+                    a.Date.AddMinutes(30) > newStart
+                )
+                .AnyAsync();
+
+            return !conflict;
+        }
+
+        public async Task<bool> IsPatientAvailableAsync(string patientId, DateTime newStart)
+        {
+            var newEnd = newStart.AddMinutes(30);
+
+            var conflict = await _appointmentsCollection
+                .Find(a =>
+                    a.PatientId == patientId &&
+                    a.Date < newEnd &&
+                    a.Date.AddMinutes(30) > newStart
+                )
+                .AnyAsync();
+
+            return !conflict;
+        }
+
 
     }
 }
