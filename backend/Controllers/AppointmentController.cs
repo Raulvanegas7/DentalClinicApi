@@ -62,6 +62,27 @@ namespace DentalClinicApi.Controllers
         [Authorize(Roles = "Admin,Receptionist")]
         public async Task<ActionResult> Create([FromBody] CreateAppointmentDto dto)
         {
+            if (dto.Date <= DateTime.UtcNow)
+            {
+                return BadRequest("No se puede agendar una cita en el pasado.");
+            }
+
+            var localHour = dto.Date.ToLocalTime().TimeOfDay;
+            if (localHour < TimeSpan.FromHours(8) || localHour >= TimeSpan.FromHours(18))
+            {
+                return BadRequest("El horario permitido es de 8:00 AM a 6:00 PM hora Colombia.");
+            }
+
+            if (!await _appointmentService.IsDentistAvailableAsync(dto.DentistId, dto.Date))
+            {
+                return BadRequest("El dentista ya tiene una cita en ese horario.");
+            }
+
+            if (!await _appointmentService.IsPatientAvailableAsync(dto.PatientId, dto.Date))
+            {
+                return BadRequest("El paciente ya tiene una cita en ese horario.");
+            }
+
             var patientExist = await _appointmentService.PatientExists(dto.PatientId);
             if (!patientExist)
                 return BadRequest("El paciente no existe");
@@ -74,23 +95,45 @@ namespace DentalClinicApi.Controllers
             if (!serviceExist)
                 return BadRequest("El servicio no existe");
 
-            await _appointmentService.CreateAppointment(dto);
-            return Ok("Cita creada correctamente.");
+            var newAppointment = await _appointmentService.CreateAppointment(dto);
+
+            return CreatedAtAction(nameof(GetById),
+                new { id = newAppointment.Id }, newAppointment);
         }
 
-        [HttpPut("{id}")]
-        [Authorize(Roles = "Admin,Receptionist")]
-        public async Task<ActionResult> Update(string id, [FromBody] UpdateAppointmentDto dto)
+        [HttpPatch("{id}")]
+        [Authorize(Roles = "Admin,Receptionist,Dentist")]
+        public async Task<ActionResult> PartialUpdate(string id, [FromBody] UpdateAppointmentDto dto)
         {
-            var findApp = await _appointmentService.GetOneById(id);
-            if (findApp == null)
+            var appointment = await _appointmentService.GetOneById(id);
+            if (appointment == null)
                 return NotFound();
 
-            await _appointmentService.UpdateApp(id, dto);
-            return NoContent();
+            if (dto.Date.HasValue)
+            {
+                if (dto.Date <= DateTime.UtcNow)
+                    return BadRequest("No se puede mover la cita al pasado.");
+
+                var localHour = dto.Date.Value.ToLocalTime().TimeOfDay;
+                if (localHour < TimeSpan.FromHours(8) || localHour >= TimeSpan.FromHours(18))
+                {
+                    return BadRequest("El horario permitido es de 8:00 AM a 6:00 PM hora Colombia.");
+                }
+
+                if (!await _appointmentService.IsDentistAvailableAsync(appointment.DentistId, dto.Date.Value))
+                    return BadRequest("El dentista no está disponible en ese horario.");
+
+                if (!await _appointmentService.IsPatientAvailableAsync(appointment.PatientId, dto.Date.Value))
+                    return BadRequest("El paciente no está disponible en ese horario.");
+            }
+
+            await _appointmentService.PartialUpdateBasicAsync(id, dto);
+
+            return Ok("Cita actualizada correctamente.");
         }
 
-        [HttpPatch("{id}/complete")]
+
+        [HttpPatch("complete/{id}")]
         [Authorize(Roles = "Dentist")]
         public async Task<ActionResult> MarkComplete(string id)
         {
@@ -108,7 +151,7 @@ namespace DentalClinicApi.Controllers
 
 
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,Receptionist")]
         public async Task<ActionResult> Delete(string id)
         {
             var findApp = await _appointmentService.GetOneById(id);
@@ -120,7 +163,7 @@ namespace DentalClinicApi.Controllers
         }
 
         [HttpGet("detailed")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,Receptionist")]
         public async Task<ActionResult<List<AppointmentDetailDto>>> AppointmentWithDetails()
         {
             var appointmentDetails = await _appointmentService.GetDetailedAppointments();

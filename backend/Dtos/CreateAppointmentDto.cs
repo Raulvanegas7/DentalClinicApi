@@ -19,10 +19,8 @@ namespace backend.Dtos
         public string ServiceId { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "La fecha de la cita es obligatoria.")]
-        public DateTime Date { get; set; }
+        public DateTime Date { get; set; } 
 
-        public string Notes { get; set; } = string.Empty;
-
-        public AppointmentStatus? Status { get; set; } 
+        public string Notes { get; set; } = string.Empty; 
     }
 }
