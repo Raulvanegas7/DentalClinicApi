@@ -9,8 +9,7 @@ namespace backend.Dtos
 {
     public class UpdateAppointmentDto
     {
-        [Required(ErrorMessage = "La fecha de la cita es obligatoria.")]
-        public DateTime Date { get; set; }
+        public DateTime? Date { get; set; }
 
         public string Notes { get; set; } = string.Empty;
 
