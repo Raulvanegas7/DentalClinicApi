@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using backend.Dtos;
 using DentalClinicApi.Contexts;
 using DentalClinicApi.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -31,9 +32,18 @@ namespace DentalClinicApi.Services
             return result;
         }
 
-        public async Task CreateDentist(Dentist newDentist)
+        public async Task<Dentist> CreateDentist(CreateDentistDto dto)
         {
+            var newDentist = new Dentist
+            {
+                Name = dto.Name,
+                Email = dto.Email,
+                Specialty = dto.Specialty,
+                Phone = dto.Phone
+            };
+
             await _dentistsCollection.InsertOneAsync(newDentist);
+            return newDentist;
         }
 
         public async Task UpdateDentist(string id, Dentist updateDentist)

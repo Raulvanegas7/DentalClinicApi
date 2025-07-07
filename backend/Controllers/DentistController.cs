@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using backend.Dtos;
 using DentalClinicApi.Models;
 using DentalClinicApi.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -40,9 +41,9 @@ namespace DentalClinicApi.Controllers
 
         [HttpPost]
         [Authorize(Roles = "Admin")]
-        public async Task<ActionResult> Create([FromBody] Dentist newDentist)
+        public async Task<ActionResult> Create([FromBody] CreateDentistDto dto)
         {
-            await _dentistService.CreateDentist(newDentist);
+            var newDentist = await _dentistService.CreateDentist(dto);
             return CreatedAtAction(nameof(GetById), new { id = newDentist.Id }, newDentist);
         }
 
