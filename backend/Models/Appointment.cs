@@ -15,12 +15,15 @@ namespace DentalClinicApi.Models
         public string Id { get; set; } = string.Empty;
 
         [BsonElement("patientId")]
+        [BsonRepresentation(BsonType.ObjectId)]
         public string PatientId { get; set; } = string.Empty;
 
         [BsonElement("dentistId")]
+        [BsonRepresentation(BsonType.ObjectId)]
         public string DentistId { get; set; } = string.Empty;
 
         [BsonElement("serviceId")]
+        [BsonRepresentation(BsonType.ObjectId)]
         public string ServiceId { get; set; } = string.Empty;
 
         [BsonElement("date")]
