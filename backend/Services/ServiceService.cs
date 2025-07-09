@@ -2,8 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using backend.Dtos;
 using DentalClinicApi.Contexts;
 using DentalClinicApi.Models;
+using Microsoft.AspNetCore.Authorization.Infrastructure;
 using MongoDB.Bson;
 using MongoDB.Driver;
 
@@ -30,9 +32,26 @@ namespace DentalClinicApi.Services
             return result;
         }
 
-        public async Task CreateService(Service newService)
+        public async Task<Service> CreateServiceAsync(CreateServiceDto dto)
         {
+            if (string.IsNullOrWhiteSpace(dto.Name))
+                throw new Exception("El nombre del servicio es obligatorio.");
+
+            if (dto.Price <= 0)
+                throw new Exception("El precio debe ser mayor que cero.");
+
+            var exists = await _servicesCollection.Find(s => s.Name == dto.Name).AnyAsync();
+            if (exists)
+                throw new Exception("Ya existe un servicio con ese nombre.");
+
+            var newService = new Service
+            {
+                Name = dto.Name,
+                Description = dto.Description,
+                Price = dto.Price
+            };
             await _servicesCollection.InsertOneAsync(newService);
+            return newService;
         }
 
         public async Task UpdateService(string id, Service updateService)
