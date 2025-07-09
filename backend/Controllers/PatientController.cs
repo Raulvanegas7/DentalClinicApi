@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using backend.Dtos;
 using DentalClinicApi.Models;
 using DentalClinicApi.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -38,12 +39,12 @@ namespace DentalClinicApi.Controllers
             return Ok(patient);
         }
 
-        [HttpPost]
+        [HttpPost("register")]
         [Authorize(Roles = "Admin,Receptionist")]
-        public async Task<ActionResult> Create([FromBody] Patient newPatient)
+        public async Task<ActionResult> RegisterPatientWithUser([FromBody] CreatePatientDto dto)
         {
-            await _patientService.CreatePatient(newPatient);
-            return CreatedAtAction(nameof(GetById), new { id = newPatient.Id }, newPatient);
+            await _patientService.RegisterPatientWithUserAsync(dto);
+            return Ok(new { message = "Registro exitoso"});
         }
 
         [HttpPut("{id}")]

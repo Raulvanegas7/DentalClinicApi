@@ -24,5 +24,9 @@ namespace DentalClinicApi.Models
 
         [BsonElement("birthDate")]
         public DateTime BirthDate { get; set; }
+
+        [BsonElement("userId")]
+        [BsonRepresentation(BsonType.ObjectId)]
+        public string UserId { get; set; } = string.Empty;
     }
 }
