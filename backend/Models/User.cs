@@ -25,9 +25,10 @@ namespace DentalClinicApi.Models
 
         [BsonElement("role")]
         [BsonRepresentation(MongoDB.Bson.BsonType.String)]
-        public UserRole Role { get; set; } 
+        public UserRole Role { get; set; }
 
         [BsonElement("status")]
-        public string Status { get; set; }
+        [BsonRepresentation(MongoDB.Bson.BsonType.String)]
+        public UserStatus Status { get; set; } = UserStatus.Active;
     }
 }
