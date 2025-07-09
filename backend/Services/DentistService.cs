@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using backend.Dtos;
+using backend.Enums;
 using DentalClinicApi.Contexts;
 using DentalClinicApi.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -14,10 +15,14 @@ namespace DentalClinicApi.Services
     public class DentistService
     {
         private readonly IMongoCollection<Dentist> _dentistsCollection;
+        private readonly IMongoCollection<User> _usersCollection;
 
-        public DentistService(MongoDbContext context)
+        private readonly JwtService _jwtService;
+        public DentistService(MongoDbContext context, JwtService jwtService)
         {
             _dentistsCollection = context.Dentists;
+            _usersCollection = context.Users;
+            _jwtService = jwtService;
         }
 
         public async Task<List<Dentist>> GetAllDentists()
@@ -32,18 +37,36 @@ namespace DentalClinicApi.Services
             return result;
         }
 
-        public async Task<Dentist> CreateDentist(CreateDentistDto dto)
+        public async Task<string> RegisterUserWithDentistAsync(CreateDentistDto dto)
         {
+            var existingUser = await _usersCollection.Find(u => u.Email == dto.Email).FirstOrDefaultAsync();
+            if (existingUser != null) return null;
+
+            var existingDentist = await _dentistsCollection.Find(x => x.Email == dto.Email).FirstOrDefaultAsync();
+            if (existingDentist != null) return null;
+
+            var newUser = new User
+            {
+                Username = dto.Email,
+                Email = dto.Email,
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
+                Role = UserRole.Dentist
+            };
+
+            await _usersCollection.InsertOneAsync(newUser);
+
             var newDentist = new Dentist
             {
                 Name = dto.Name,
-                Email = dto.Email,
                 Specialty = dto.Specialty,
-                Phone = dto.Phone
+                Email = dto.Email,
+                Phone = dto.Phone,
+                UserId = newUser.Id
             };
 
             await _dentistsCollection.InsertOneAsync(newDentist);
-            return newDentist;
+
+            return _jwtService.GenerateToken(newUser);
         }
 
         public async Task UpdateDentist(string id, Dentist updateDentist)

@@ -28,5 +28,9 @@ namespace DentalClinicApi.Models
 
         [BsonElement("phone")]
         public string Phone { get; set; } = string.Empty;
+
+        [BsonElement("userId")]
+        [BsonRepresentation(BsonType.ObjectId)]
+        public string UserId { get; set; } = string.Empty;
     }
 }

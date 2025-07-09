@@ -39,12 +39,15 @@ namespace DentalClinicApi.Controllers
             return Ok(dentist);
         }
 
-        [HttpPost]
+        [HttpPost("register")]
         [Authorize(Roles = "Admin")]
-        public async Task<ActionResult> Create([FromBody] CreateDentistDto dto)
+        public async Task<ActionResult> RegisterUserWithDentist([FromBody] CreateDentistDto dto)
         {
-            var newDentist = await _dentistService.CreateDentist(dto);
-            return CreatedAtAction(nameof(GetById), new { id = newDentist.Id }, newDentist);
+            var token = await _dentistService.RegisterUserWithDentistAsync(dto);
+            if (token == null)
+                return BadRequest("El dentista o usuario ya existe.");
+                
+            return Ok(new { message = "Dentista registrado correctamente.", token });
         }
 
         [HttpPut("{id}")]
