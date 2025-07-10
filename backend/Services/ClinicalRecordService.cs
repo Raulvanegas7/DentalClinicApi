@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using backend.Dtos;
 using DentalClinicApi.Contexts;
+using DentalClinicApi.Dtos;
 using DentalClinicApi.Models;
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -27,6 +28,11 @@ namespace DentalClinicApi.Services
             _servicesCollection = context.Services;
         }
 
+        public async Task<List<ClinicalRecord>> GetAllClinicalRecordsAsync()
+        {
+            return await _clinicalRecordsCollection.Find(x => true).ToListAsync();
+        }
+
         public async Task<List<ClinicalRecord>> GetByPatientIdAsync(string patientId)
         {
             return await _clinicalRecordsCollection.Find(x => x.PatientId == patientId).ToListAsync();
@@ -37,14 +43,33 @@ namespace DentalClinicApi.Services
             return await _clinicalRecordsCollection.Find(x => x.AppointmentId == appointmentId).FirstOrDefaultAsync();
         }
 
-        public async Task<List<ClinicalRecord>> GetAllClinicalRecordsAsync()
-        {
-            return await _clinicalRecordsCollection.Find(x => true).ToListAsync();
-        }
 
-        public async Task CreateAsync(ClinicalRecord newClinicalRecord)
+        public async Task<ClinicalRecord> CreateClinicalRecordAsync(CreateClinicalRecordDto dto)
         {
+            var appointment = await _appointmentsCollection.Find(x => x.Id == dto.AppointmentId).FirstOrDefaultAsync();
+            if (appointment == null)
+                throw new Exception("La cita no existe");
+
+            var exists = await _clinicalRecordsCollection
+                .Find(x => x.AppointmentId == dto.AppointmentId)
+                .AnyAsync();
+
+            if (exists)
+                throw new Exception("Ya existe una historia clínica para esta cita.");
+
+            var newClinicalRecord = new ClinicalRecord
+            {
+                AppointmentId = appointment.Id,
+                PatientId = appointment.PatientId,
+                DentistId = appointment.DentistId,
+                ServiceId = appointment.ServiceId,
+                Diagnosis = dto.Diagnosis,
+                Treatment = dto.Treatment,
+                Notes = dto.Notes
+            };
+
             await _clinicalRecordsCollection.InsertOneAsync(newClinicalRecord);
+            return newClinicalRecord;
         }
 
         public async Task<bool> PatientExists(string patientId)
@@ -59,7 +84,7 @@ namespace DentalClinicApi.Services
 
         public async Task<ClinicalRecordDetailedDto> GetClinicalWithDetailsAsync(string id)
         {
-            var filter = Builders<ClinicalRecord>.Filter.Eq(x => x.Id,(id));
+            var filter = Builders<ClinicalRecord>.Filter.Eq(x => x.Id, (id));
             var clinicalRecord = await _clinicalRecordsCollection.Find(filter).FirstOrDefaultAsync();
             if (clinicalRecord == null) return null;
 
@@ -80,6 +105,7 @@ namespace DentalClinicApi.Services
                 {
                     Id = appointment.Id,
                     Date = appointment.Date,
+                    Status = appointment.Status,
                     Service = new ServiceDtoCr
                     {
                         Id = service.Id,
@@ -100,8 +126,8 @@ namespace DentalClinicApi.Services
                     Name = dentist.Name,
                     Specialty = dentist.Specialty
                 }
-            };     
-            
+            };
+
 
         }
     }

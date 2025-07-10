@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using backend.Enums;
 
 namespace backend.Dtos
 {
@@ -21,6 +22,8 @@ namespace backend.Dtos
     {
         public string Id { get; set; }
         public DateTime Date { get; set; }
+
+        public AppointmentStatus Status { get; set; }
         public ServiceDtoCr Service { get; set; }
     }
 

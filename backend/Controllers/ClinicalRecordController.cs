@@ -51,30 +51,9 @@ namespace DentalClinicApi.Controllers
 
         [HttpPost]
         [Authorize(Roles = "Admin,Dentist")]
-        public async Task<ActionResult> CreateClinicalRecord([FromBody] CreateClinicalRecordDto dto)
+        public async Task<ActionResult<ClinicalRecord>> CreateClinicalRecord([FromBody] CreateClinicalRecordDto dto)
         {
-            if (!await _clinicalRecordService.PatientExists(dto.PatientId))
-                return BadRequest("El paciente no existe.");
-
-            if (!await _clinicalRecordService.AppointmentExists(dto.AppointmentId))
-                return BadRequest("La cita no existe.");
-
-            if (await _clinicalRecordService.GetByAppointmentIdAsync(dto.AppointmentId) != null)
-            {
-                return BadRequest("Ya existe una historia clínica para esta cita.");
-            }
-
-            var newRecord = new ClinicalRecord
-            {
-                AppointmentId = dto.AppointmentId,
-                PatientId = dto.PatientId,
-                DentistId = dto.DentistId,
-                Diagnosis = dto.Diagnosis,
-                Treatment = dto.Treatment,
-                Notes = dto.Notes
-            };
-
-            await _clinicalRecordService.CreateAsync(newRecord);
+            var newRecord = await _clinicalRecordService.CreateClinicalRecordAsync(dto);
 
             return CreatedAtAction(nameof(GetByAppointmentId),
              new { appointmentId = newRecord.AppointmentId },

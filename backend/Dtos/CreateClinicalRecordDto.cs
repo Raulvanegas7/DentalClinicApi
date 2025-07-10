@@ -12,12 +12,6 @@ namespace DentalClinicApi.Dtos
         public string AppointmentId { get; set; } = null!;
 
         [Required]
-        public string PatientId { get; set; } = null!;
-
-        [Required]
-        public string DentistId { get; set; } = null!;
-
-        [Required]
         [MinLength(3)]
         public string Diagnosis { get; set; } = null!;
 
