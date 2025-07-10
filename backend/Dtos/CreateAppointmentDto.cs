@@ -10,10 +10,10 @@ namespace backend.Dtos
     public class CreateAppointmentDto
     {
         [Required(ErrorMessage = "El ID del paciente es obligatorio.")]
-        public string PatientId { get; set; } = string.Empty;
+        public string PatientUserId { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "El ID del odontólogo es obligatorio.")]
-        public string DentistId { get; set; } = string.Empty;
+        public string DentistProfileId  { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "El ID del servicio es obligatorio.")]
         public string ServiceId { get; set; } = string.Empty;

@@ -40,18 +40,30 @@ namespace DentalClinicApi.Services
             return result;
         }
 
-        public async Task<List<Appointment>> GetAppointmentsByDentist(string dentistId)
+        public async Task<List<Appointment>> GetAppointmentsByDentist(string dentistUserId)
         {
-            var filter = Builders<Appointment>.Filter.Eq(x => x.DentistId, dentistId);
+            var filter = Builders<Appointment>.Filter.Eq(x => x.DentistId, dentistUserId);
             var result = await _appointmentsCollection.Find(filter).ToListAsync();
             return result;
         }
         public async Task<Appointment> CreateAppointment(CreateAppointmentDto dto)
         {
+            var patient = await _patientsCollection.Find(x => x.UserId == dto.PatientUserId).FirstOrDefaultAsync();
+            if (patient == null)
+                throw new Exception("El paciente no existe");
+
+            var dentist = await _dentistsCollection.Find(x => x.Id == dto.DentistProfileId).FirstOrDefaultAsync();
+            if (dentist == null)
+                throw new Exception("Dentista no existe");
+
+            var service = await _servicesCollection.Find(x => x.Id == dto.ServiceId).FirstOrDefaultAsync();
+            if (service == null)
+                throw new Exception("El servicio no existe.");
+
             var newAppointment = new Appointment
             {
-                PatientId = dto.PatientId,
-                DentistId = dto.DentistId,
+                PatientId = patient.UserId,
+                DentistId = dentist.UserId,
                 ServiceId = dto.ServiceId,
                 Date = dto.Date,
                 Notes = dto.Notes,
@@ -68,7 +80,7 @@ namespace DentalClinicApi.Services
         {
             var filter = Builders<Appointment>.Filter.Eq(x => x.Id, id);
 
-            var update = Builders<Appointment>.Update; 
+            var update = Builders<Appointment>.Update;
             UpdateDefinition<Appointment>? finalUpdate = null;
 
             if (dto.Date.HasValue)
@@ -91,7 +103,7 @@ namespace DentalClinicApi.Services
             }
 
             if (finalUpdate == null)
-                return; 
+                return;
 
             await _appointmentsCollection.UpdateOneAsync(filter, finalUpdate);
         }
@@ -123,8 +135,8 @@ namespace DentalClinicApi.Services
 
             var result = appointments.Select(app =>
             {
-                var patient = patients.FirstOrDefault(p => p.Id == app.PatientId);
-                var dentist = dentists.FirstOrDefault(d => d.Id == app.DentistId);
+                var patient = patients.FirstOrDefault(p => p.UserId == app.PatientId);
+                var dentist = dentists.FirstOrDefault(d => d.UserId == app.DentistId);
                 var service = services.FirstOrDefault(s => s.Id == app.ServiceId);
 
                 return new AppointmentDetailDto
@@ -147,25 +159,13 @@ namespace DentalClinicApi.Services
                     Service = new ServiceMiniDto
                     {
                         Id = service?.Id ?? string.Empty,
-                        Name = service?.Name ?? "Desconocido"
+                        Name = service?.Name ?? "Desconocido",
+                        Description = service?.Description ?? string.Empty
                     }
                 };
             }).ToList();
 
             return result;
-        }
-
-
-        public async Task<bool> PatientExists(string patientId)
-        {
-            var filter = Builders<Patient>.Filter.Eq(x => x.Id, patientId);
-            return await _patientsCollection.Find(filter).AnyAsync();
-        }
-
-        public async Task<bool> DentistExists(string dentistId)
-        {
-            var filter = Builders<Dentist>.Filter.Eq(x => x.Id, dentistId);
-            return await _dentistsCollection.Find(filter).AnyAsync();
         }
 
         public async Task<bool> ServiceExists(string serviceId)
@@ -174,35 +174,52 @@ namespace DentalClinicApi.Services
             return await _servicesCollection.Find(filter).AnyAsync();
         }
 
-        public async Task<bool> IsDentistAvailableAsync(string dentistId, DateTime newStart)
+        public async Task<bool> IsDentistAvailableAsync(string dentistProfileId, DateTime date)
         {
-            var newEnd = newStart.AddMinutes(30);
+            var dentist = await _dentistsCollection.Find(x => x.Id == dentistProfileId).FirstOrDefaultAsync();
+            if (dentist == null)
+                throw new Exception("El odontólogo no existe.");
 
-            var conflict = await _appointmentsCollection
-                .Find(a =>
-                    a.DentistId == dentistId &&
-                    a.Date < newEnd &&
-                    a.Date.AddMinutes(30) > newStart
+            var requestedStart = date;
+            var requestedEnd = date.AddMinutes(30);
+
+            var filter = Builders<Appointment>.Filter.And(
+                Builders<Appointment>.Filter.Eq(x => x.DentistId, dentist.UserId),
+                Builders<Appointment>.Filter.Ne(x => x.Status, AppointmentStatus.Completed),
+                Builders<Appointment>.Filter.Or(
+                    Builders<Appointment>.Filter.And(
+                        Builders<Appointment>.Filter.Lt(x => x.Date, requestedEnd),
+                        Builders<Appointment>.Filter.Gt(x => x.Date, requestedStart.AddMinutes(-30))
+                    )
                 )
-                .AnyAsync();
+            );
 
-            return !conflict;
+            var conflict = await _appointmentsCollection.Find(filter).FirstOrDefaultAsync();
+            return conflict == null;
         }
 
-        public async Task<bool> IsPatientAvailableAsync(string patientId, DateTime newStart)
+
+        public async Task<bool> IsPatientAvailableAsync(string patientUserId, DateTime date)
         {
-            var newEnd = newStart.AddMinutes(30);
+            var requestedStart = date;
+            var requestedEnd = date.AddMinutes(30);
 
-            var conflict = await _appointmentsCollection
-                .Find(a =>
-                    a.PatientId == patientId &&
-                    a.Date < newEnd &&
-                    a.Date.AddMinutes(30) > newStart
+            var filter = Builders<Appointment>.Filter.And(
+                Builders<Appointment>.Filter.Eq(x => x.PatientId, patientUserId),
+                Builders<Appointment>.Filter.Ne(x => x.Status, AppointmentStatus.Completed),
+                Builders<Appointment>.Filter.Or(
+                    Builders<Appointment>.Filter.And(
+                        Builders<Appointment>.Filter.Lt(x => x.Date, requestedEnd),
+                        Builders<Appointment>.Filter.Gt(x => x.Date, requestedStart.AddMinutes(-30))
+                    )
                 )
-                .AnyAsync();
+            );
 
-            return !conflict;
+            var conflict = await _appointmentsCollection.Find(filter).FirstOrDefaultAsync();
+            return conflict == null;
         }
+
+
 
 
     }

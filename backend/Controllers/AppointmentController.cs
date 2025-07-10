@@ -41,8 +41,8 @@ namespace DentalClinicApi.Controllers
         [Authorize(Roles = "Dentist")]
         public async Task<ActionResult<List<Appointment>>> GetMyAppointments()
         {
-            var dentistId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            var appointments = await _appointmentService.GetAppointmentsByDentist(dentistId);
+            var dentistUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var appointments = await _appointmentService.GetAppointmentsByDentist(dentistUserId);
             return Ok(appointments);
         }
 
@@ -73,27 +73,15 @@ namespace DentalClinicApi.Controllers
                 return BadRequest("El horario permitido es de 8:00 AM a 6:00 PM hora Colombia.");
             }
 
-            if (!await _appointmentService.IsDentistAvailableAsync(dto.DentistId, dto.Date))
+            if (!await _appointmentService.IsDentistAvailableAsync(dto.DentistProfileId, dto.Date))
             {
                 return BadRequest("El dentista ya tiene una cita en ese horario.");
             }
 
-            if (!await _appointmentService.IsPatientAvailableAsync(dto.PatientId, dto.Date))
+            if (!await _appointmentService.IsPatientAvailableAsync(dto.PatientUserId, dto.Date))
             {
                 return BadRequest("El paciente ya tiene una cita en ese horario.");
             }
-
-            var patientExist = await _appointmentService.PatientExists(dto.PatientId);
-            if (!patientExist)
-                return BadRequest("El paciente no existe");
-
-            var dentistExist = await _appointmentService.DentistExists(dto.DentistId);
-            if (!dentistExist)
-                return BadRequest("El odontologo no existe");
-
-            var serviceExist = await _appointmentService.ServiceExists(dto.ServiceId);
-            if (!serviceExist)
-                return BadRequest("El servicio no existe");
 
             var newAppointment = await _appointmentService.CreateAppointment(dto);
 
