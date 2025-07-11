@@ -69,11 +69,32 @@ namespace DentalClinicApi.Services
             return _jwtService.GenerateToken(newUser);
         }
 
-        public async Task UpdateDentist(string id, Dentist updateDentist)
+        public async Task PartialUpdateAsync(string id, UpdateDentistDto dto)
         {
             var filter = Builders<Dentist>.Filter.Eq(x => x.Id, id);
-            await _dentistsCollection.ReplaceOneAsync(filter, updateDentist);
+
+            var updates = new List<UpdateDefinition<Dentist>>();
+
+            if (!string.IsNullOrWhiteSpace(dto.Name))
+                updates.Add(Builders<Dentist>.Update.Set(x => x.Name, dto.Name));
+
+            if (!string.IsNullOrWhiteSpace(dto.Email))
+                updates.Add(Builders<Dentist>.Update.Set(x => x.Email, dto.Email));
+
+            if (!string.IsNullOrWhiteSpace(dto.Specialty))
+                updates.Add(Builders<Dentist>.Update.Set(x => x.Specialty, dto.Specialty));
+
+            if (!string.IsNullOrWhiteSpace(dto.Phone))
+                updates.Add(Builders<Dentist>.Update.Set(x => x.Phone, dto.Phone));
+
+            if (updates.Count > 0)
+            {
+                var combinedUpdate = Builders<Dentist>.Update.Combine(updates);
+                await _dentistsCollection.UpdateOneAsync(filter, combinedUpdate);
+            }
+
         }
+
 
         public async Task DeleteDentist(string id)
         {

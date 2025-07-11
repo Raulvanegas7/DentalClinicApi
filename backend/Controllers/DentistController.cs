@@ -50,17 +50,16 @@ namespace DentalClinicApi.Controllers
             return Ok(new { message = "Dentista registrado correctamente.", token });
         }
 
-        [HttpPut("{id}")]
+        [HttpPatch("{id}")]
         [Authorize(Roles = "Admin")]
-        public async Task<ActionResult> Update(string id, [FromBody] Dentist updateDentist)
+        public async Task<ActionResult> UpdateDentist(string id, [FromBody] UpdateDentistDto dto)
         {
             var findDentist = await _dentistService.GetOneById(id);
             if (findDentist == null)
-                return NotFound();
+                return NotFound("El odontólogo no existe.");
 
-            updateDentist.Id = id;
-            await _dentistService.UpdateDentist(id, updateDentist);
-            return NoContent();
+            await _dentistService.PartialUpdateAsync(id, dto);
+            return Ok("Odontólogo actualizado correctamente.");
         }
 
         [HttpDelete("{id}")]
