@@ -47,17 +47,16 @@ namespace DentalClinicApi.Controllers
             return Ok(new { message = "Registro exitoso"});
         }
 
-        [HttpPut("{id}")]
+        [HttpPatch("{id}")]
         [Authorize(Roles = "Admin,Receptionist")]
-        public async Task<ActionResult> Update(string id, Patient updatePatient)
+        public async Task<ActionResult> Update(string id, UpdatePatientDto dto)
         {
             var existingPatient = await _patientService.GetOneById(id);
             if (existingPatient == null)
                 return NotFound();
-
-            updatePatient.Id = id;
-            await _patientService.UpdatePatient(id, updatePatient);
-            return NoContent();
+            
+            await _patientService.PartialUpdateAsync(id, dto);
+            return Ok("Paciente actualizado con exito");
         }
 
         [HttpDelete("{id}")]

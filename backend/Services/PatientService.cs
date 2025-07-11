@@ -66,14 +66,37 @@ namespace DentalClinicApi.Services
                 UserId = newUser.Id
             };
             await _patientsCollection.InsertOneAsync(newPatient);
-            
+
         }
 
-        public async Task UpdatePatient(string id, Patient updatedPatien)
+        public async Task PartialUpdateAsync(string id, UpdatePatientDto dto)
         {
             var filter = Builders<Patient>.Filter.Eq(x => x.Id, id);
-            await _patientsCollection.ReplaceOneAsync(filter, updatedPatien);
+
+            var updates = new List<UpdateDefinition<Patient>>();
+
+            if (!string.IsNullOrWhiteSpace(dto.Name))
+                updates.Add(Builders<Patient>.Update.Set(x => x.Name, dto.Name));
+
+            if (!string.IsNullOrWhiteSpace(dto.Email))
+                updates.Add(Builders<Patient>.Update.Set(x => x.Email, dto.Email));
+
+            if (!string.IsNullOrWhiteSpace(dto.Phone))
+                updates.Add(Builders<Patient>.Update.Set(x => x.Phone, dto.Phone));
+
+            if (!string.IsNullOrWhiteSpace(dto.Address))
+                updates.Add(Builders<Patient>.Update.Set(x => x.Address, dto.Address));
+
+            if (dto.BirthDate.HasValue)
+                updates.Add(Builders<Patient>.Update.Set(x => x.BirthDate, dto.BirthDate.Value));
+
+            if (updates.Count > 0)
+            {
+                var combinedUpdate = Builders<Patient>.Update.Combine(updates);
+                await _patientsCollection.UpdateOneAsync(filter, combinedUpdate);
+            }
         }
+
 
         public async Task DeletePatient(string id)
         {
