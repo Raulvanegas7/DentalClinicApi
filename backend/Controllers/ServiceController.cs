@@ -50,17 +50,16 @@ namespace DentalClinicApi.Controllers
             return CreatedAtAction(nameof(GetById), new { id = newService.Id }, newService);
         }
 
-        [HttpPut("{id}")]
+        [HttpPatch("{id}")]
         [Authorize(Roles = "Admin")]
-        public async Task<ActionResult> Update(string id, Service updateService)
+        public async Task<ActionResult> Update(string id, UpdateServiceDto dto)
         {
             var findService = await _serviceService.GetOneById(id);
             if (findService == null)
                 return NotFound();
 
-            updateService.Id = id;
-            await _serviceService.UpdateService(id, updateService);
-            return NoContent();
+            await _serviceService.UpdateService(id, dto);
+            return Ok("Actualización exitosa");
         }
 
         [HttpDelete("{id}")]

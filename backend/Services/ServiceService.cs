@@ -54,10 +54,22 @@ namespace DentalClinicApi.Services
             return newService;
         }
 
-        public async Task UpdateService(string id, Service updateService)
+        public async Task UpdateService(string id, UpdateServiceDto dto)
         {
             var filter = Builders<Service>.Filter.Eq(x => x.Id, id);
-            await _servicesCollection.ReplaceOneAsync(filter, updateService);
+            var updates = new List<UpdateDefinition<Service>>();
+
+            if (!string.IsNullOrWhiteSpace(dto.Name))
+                updates.Add(Builders<Service>.Update.Set(x => x.Name, dto.Name));
+
+            if (!string.IsNullOrWhiteSpace(dto.Description))
+                updates.Add(Builders<Service>.Update.Set(x => x.Description, dto.Description));
+
+            if (dto.Price.HasValue)
+                updates.Add(Builders<Service>.Update.Set(x => x.Price, dto.Price.Value));
+
+            var updateCombine = Builders<Service>.Update.Combine(updates);
+            await _servicesCollection.UpdateOneAsync(filter, updateCombine);
         }
 
         public async Task DeleteService(string id)
