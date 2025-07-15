@@ -80,34 +80,23 @@ namespace DentalClinicApi.Services
         {
             var filter = Builders<Appointment>.Filter.Eq(x => x.Id, id);
 
-            var update = Builders<Appointment>.Update;
-            UpdateDefinition<Appointment>? finalUpdate = null;
+            var updates = new List<UpdateDefinition<Appointment>>();
 
             if (dto.Date.HasValue)
-                finalUpdate = update.Set(x => x.Date, dto.Date.Value);
+                updates.Add(Builders<Appointment>.Update.Set(x => x.Date, dto.Date.Value));
 
             if (!string.IsNullOrWhiteSpace(dto.Notes))
-            {
-                if (finalUpdate == null)
-                    finalUpdate = update.Set(x => x.Notes, dto.Notes);
-                else
-                    finalUpdate = finalUpdate.Set(x => x.Notes, dto.Notes);
-            }
+                updates.Add(Builders<Appointment>.Update.Set(x => x.Notes, dto.Notes));
 
             if (dto.Status.HasValue)
+                updates.Add(Builders<Appointment>.Update.Set(x => x.Status, dto.Status.Value));
+
+            if (updates.Count > 0)
             {
-                if (finalUpdate == null)
-                    finalUpdate = update.Set(x => x.Status, dto.Status.Value);
-                else
-                    finalUpdate = finalUpdate.Set(x => x.Status, dto.Status.Value);
+                var combinedUpdate = Builders<Appointment>.Update.Combine(updates);
+                await _appointmentsCollection.UpdateOneAsync(filter, combinedUpdate);
             }
-
-            if (finalUpdate == null)
-                return;
-
-            await _appointmentsCollection.UpdateOneAsync(filter, finalUpdate);
         }
-
 
         public async Task MarkCompleteAsync(string id)
         {
