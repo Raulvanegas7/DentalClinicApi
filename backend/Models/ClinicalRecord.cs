@@ -17,10 +17,10 @@ namespace DentalClinicApi.Models
         public string AppointmentId { get; set; } = null!;
 
         [BsonRepresentation(BsonType.ObjectId)]
-        public string PatientId { get; set; } = null!;
+        public string PatientUserId { get; set; } = null!;
 
         [BsonRepresentation(BsonType.ObjectId)]
-        public string DentistId { get; set; } = null!;
+        public string DentistUserId { get; set; } = null!;
 
         [BsonRepresentation(BsonType.ObjectId)]
         public string ServiceId { get; set; } = null;

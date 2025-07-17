@@ -33,9 +33,9 @@ namespace DentalClinicApi.Services
             return await _clinicalRecordsCollection.Find(x => true).ToListAsync();
         }
 
-        public async Task<List<ClinicalRecord>> GetByPatientIdAsync(string patientId)
+        public async Task<List<ClinicalRecord>> GetByPatientIdAsync(string patientUserId)
         {
-            return await _clinicalRecordsCollection.Find(x => x.PatientId == patientId).ToListAsync();
+            return await _clinicalRecordsCollection.Find(x => x.PatientUserId == patientUserId).ToListAsync();
         }
 
         public async Task<ClinicalRecord?> GetByAppointmentIdAsync(string appointmentId)
@@ -60,8 +60,8 @@ namespace DentalClinicApi.Services
             var newClinicalRecord = new ClinicalRecord
             {
                 AppointmentId = appointment.Id,
-                PatientId = appointment.PatientId,
-                DentistId = appointment.DentistId,
+                PatientUserId = appointment.PatientUserId,
+                DentistUserId = appointment.DentistId,
                 ServiceId = appointment.ServiceId,
                 Diagnosis = dto.Diagnosis,
                 Treatment = dto.Treatment,
@@ -89,8 +89,8 @@ namespace DentalClinicApi.Services
             if (clinicalRecord == null) return null;
 
             var appointment = await _appointmentsCollection.Find(x => x.Id == clinicalRecord.AppointmentId).FirstOrDefaultAsync();
-            var dentist = await _dentistsCollection.Find(x => x.Id == clinicalRecord.DentistId).FirstOrDefaultAsync();
-            var patient = await _patientsCollection.Find(x => x.Id == clinicalRecord.PatientId).FirstOrDefaultAsync();
+            var dentist = await _dentistsCollection.Find(x => x.UserId == clinicalRecord.DentistUserId).FirstOrDefaultAsync();
+            var patient = await _patientsCollection.Find(x => x.UserId == clinicalRecord.PatientUserId).FirstOrDefaultAsync();
             var service = await _servicesCollection.Find(x => x.Id == appointment.ServiceId).FirstOrDefaultAsync();
 
             if (appointment == null || dentist == null || patient == null || service == null) return null;
