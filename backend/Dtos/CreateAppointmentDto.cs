@@ -13,7 +13,7 @@ namespace backend.Dtos
         public string PatientUserId { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "El ID del odontólogo es obligatorio.")]
-        public string DentistProfileId  { get; set; } = string.Empty;
+        public string DentistUserId  { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "El ID del servicio es obligatorio.")]
         public string ServiceId { get; set; } = string.Empty;

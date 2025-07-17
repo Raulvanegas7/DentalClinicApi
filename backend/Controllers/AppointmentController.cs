@@ -12,7 +12,6 @@ using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 using backend.Enums;
 using backend.Dtos;
-using System.Security.Claims;
 
 
 
@@ -62,27 +61,6 @@ namespace DentalClinicApi.Controllers
         [Authorize(Roles = "Admin,Receptionist")]
         public async Task<ActionResult> Create([FromBody] CreateAppointmentDto dto)
         {
-            if (dto.Date <= DateTime.UtcNow)
-            {
-                return BadRequest("No se puede agendar una cita en el pasado.");
-            }
-
-            var localHour = dto.Date.ToLocalTime().TimeOfDay;
-            if (localHour < TimeSpan.FromHours(8) || localHour >= TimeSpan.FromHours(18))
-            {
-                return BadRequest("El horario permitido es de 8:00 AM a 6:00 PM hora Colombia.");
-            }
-
-            if (!await _appointmentService.IsDentistAvailableAsync(dto.DentistProfileId, dto.Date))
-            {
-                return BadRequest("El dentista ya tiene una cita en ese horario.");
-            }
-
-            if (!await _appointmentService.IsPatientAvailableAsync(dto.PatientUserId, dto.Date))
-            {
-                return BadRequest("El paciente ya tiene una cita en ese horario.");
-            }
-
             var newAppointment = await _appointmentService.CreateAppointment(dto);
 
             return CreatedAtAction(nameof(GetById),
@@ -93,30 +71,7 @@ namespace DentalClinicApi.Controllers
         [Authorize(Roles = "Admin,Receptionist,Dentist")]
         public async Task<ActionResult> PartialUpdate(string id, [FromBody] UpdateAppointmentDto dto)
         {
-            var appointment = await _appointmentService.GetOneById(id);
-            if (appointment == null)
-                return NotFound();
-
-            if (dto.Date.HasValue)
-            {
-                if (dto.Date <= DateTime.UtcNow)
-                    return BadRequest("No se puede mover la cita al pasado.");
-
-                var localHour = dto.Date.Value.ToLocalTime().TimeOfDay;
-                if (localHour < TimeSpan.FromHours(8) || localHour >= TimeSpan.FromHours(18))
-                {
-                    return BadRequest("El horario permitido es de 8:00 AM a 6:00 PM hora Colombia.");
-                }
-
-                if (!await _appointmentService.IsDentistAvailableAsync(appointment.DentistId, dto.Date.Value))
-                    return BadRequest("El dentista no está disponible en ese horario.");
-
-                if (!await _appointmentService.IsPatientAvailableAsync(appointment.PatientId, dto.Date.Value))
-                    return BadRequest("El paciente no está disponible en ese horario.");
-            }
-
-            await _appointmentService.PartialUpdateBasicAsync(id, dto);
-
+            await _appointmentService.PartialUpdateAsync(id, dto);
             return Ok("Cita actualizada correctamente.");
         }
 
@@ -125,14 +80,9 @@ namespace DentalClinicApi.Controllers
         [Authorize(Roles = "Dentist")]
         public async Task<ActionResult> MarkComplete(string id)
         {
-            var dentistId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var dentistUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-            var appointment = await _appointmentService.GetOneById(id);
-            if (appointment == null) return NotFound();
-
-            if (appointment.DentistId != dentistId) return Forbid();
-
-            await _appointmentService.MarkCompleteAsync(id);
+            await _appointmentService.MarkCompleteAsync(id, dentistUserId);
 
             return Ok("Cita marcada como completada.");
         }

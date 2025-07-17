@@ -52,7 +52,7 @@ namespace DentalClinicApi.Services
             if (patient == null)
                 throw new Exception("El paciente no existe");
 
-            var dentist = await _dentistsCollection.Find(x => x.Id == dto.DentistProfileId).FirstOrDefaultAsync();
+            var dentist = await _dentistsCollection.Find(x => x.UserId == dto.DentistUserId).FirstOrDefaultAsync();
             if (dentist == null)
                 throw new Exception("Dentista no existe");
 
@@ -60,9 +60,30 @@ namespace DentalClinicApi.Services
             if (service == null)
                 throw new Exception("El servicio no existe.");
 
+            if (dto.Date <= DateTime.UtcNow)
+            {
+                throw new Exception("No se puede agendar una cita en el pasado.");
+            }
+
+            var localHour = dto.Date.ToLocalTime().TimeOfDay;
+            if (localHour < TimeSpan.FromHours(8) || localHour >= TimeSpan.FromHours(18))
+            {
+                throw new Exception("El horario permitido es de 8:00 AM a 6:00 PM hora Colombia.");
+            }
+
+            if (!await IsDentistAvailableAsync(dentist.Id, dto.Date))
+            {
+                throw new Exception("El dentista ya tiene una cita en ese horario.");
+            }
+
+            if (!await IsPatientAvailableAsync(patient.UserId, dto.Date))
+            {
+                throw new Exception("El paciente ya tiene una cita en ese horario.");
+            }
+
             var newAppointment = new Appointment
             {
-                PatientId = patient.UserId,
+                PatientUserId = patient.UserId,
                 DentistId = dentist.UserId,
                 ServiceId = dto.ServiceId,
                 Date = dto.Date,
@@ -76,14 +97,34 @@ namespace DentalClinicApi.Services
         }
 
 
-        public async Task PartialUpdateBasicAsync(string id, UpdateAppointmentDto dto)
+        public async Task PartialUpdateAsync(string id, UpdateAppointmentDto dto)
         {
             var filter = Builders<Appointment>.Filter.Eq(x => x.Id, id);
+
+            var appointment = await _appointmentsCollection.Find(filter).FirstOrDefaultAsync();
+            if (appointment == null)
+                throw new Exception("La cita no existe.");
 
             var updates = new List<UpdateDefinition<Appointment>>();
 
             if (dto.Date.HasValue)
-                updates.Add(Builders<Appointment>.Update.Set(x => x.Date, dto.Date.Value));
+            {
+                var newDate = dto.Date.Value;
+                if (newDate <= DateTime.UtcNow)
+                    throw new Exception("No se puede mover la cita al pasado.");
+
+                var localHour = newDate.ToLocalTime().TimeOfDay;
+                if (localHour < TimeSpan.FromHours(8) || localHour >= TimeSpan.FromHours(18))
+                    throw new Exception("El horario permitido es de 8:00 AM a 6:00 PM hora Colombia.");
+
+                if (!await IsDentistAvailableAsync(appointment.DentistId, newDate, appointment.Id))
+                    throw new Exception("El odontólogo no está disponible en ese horario.");
+
+                if (!await IsPatientAvailableAsync(appointment.PatientUserId, newDate, appointment.Id))
+                    throw new Exception("El paciente no está disponible en ese horario.");
+
+                updates.Add(Builders<Appointment>.Update.Set(x => x.Date, newDate));
+            }
 
             if (!string.IsNullOrWhiteSpace(dto.Notes))
                 updates.Add(Builders<Appointment>.Update.Set(x => x.Notes, dto.Notes));
@@ -97,16 +138,6 @@ namespace DentalClinicApi.Services
                 await _appointmentsCollection.UpdateOneAsync(filter, combinedUpdate);
             }
         }
-
-        public async Task MarkCompleteAsync(string id)
-        {
-            var filter = Builders<Appointment>.Filter.Eq(x => x.Id, id);
-            var update = Builders<Appointment>.Update
-                .Set(x => x.Status, AppointmentStatus.Completed);
-
-            await _appointmentsCollection.UpdateOneAsync(filter, update);
-        }
-
 
         public async Task DeleteAppointment(string id)
         {
@@ -124,7 +155,7 @@ namespace DentalClinicApi.Services
 
             var result = appointments.Select(app =>
             {
-                var patient = patients.FirstOrDefault(p => p.UserId == app.PatientId);
+                var patient = patients.FirstOrDefault(p => p.UserId == app.PatientUserId);
                 var dentist = dentists.FirstOrDefault(d => d.UserId == app.DentistId);
                 var service = services.FirstOrDefault(s => s.Id == app.ServiceId);
 
@@ -157,59 +188,66 @@ namespace DentalClinicApi.Services
             return result;
         }
 
+        public async Task MarkCompleteAsync(string id, string dentistUserId)
+        {
+            var appointment = await GetOneById(id);
+            if (appointment == null)
+                throw new Exception("La cita no existe.");
+
+            if (appointment.DentistId != dentistUserId)
+                throw new Exception("No tiene permiso para completar esta cita.");
+
+            var filter = Builders<Appointment>.Filter.Eq(x => x.Id, id);
+            var update = Builders<Appointment>.Update.Set(x => x.Status, AppointmentStatus.Completed);
+
+            await _appointmentsCollection.UpdateOneAsync(filter, update);
+        }
+
         public async Task<bool> ServiceExists(string serviceId)
         {
             var filter = Builders<Service>.Filter.Eq(x => x.Id, serviceId);
             return await _servicesCollection.Find(filter).AnyAsync();
         }
 
-        public async Task<bool> IsDentistAvailableAsync(string dentistProfileId, DateTime date)
+        public async Task<bool> IsDentistAvailableAsync(string dentistUserId, DateTime date, string? appointmentIdToExclude = null)
         {
-            var dentist = await _dentistsCollection.Find(x => x.Id == dentistProfileId).FirstOrDefaultAsync();
-            if (dentist == null)
-                throw new Exception("El odontólogo no existe.");
+            // var dentist = await _dentistsCollection.Find(x => x.UserId == dentistUserId).FirstOrDefaultAsync();
+            // if (dentist == null)
+            //     throw new Exception("El odontólogo no existe.");
 
-            var requestedStart = date;
-            var requestedEnd = date.AddMinutes(30);
+            var start = date;
+            var end = date.AddMinutes(30);
 
             var filter = Builders<Appointment>.Filter.And(
-                Builders<Appointment>.Filter.Eq(x => x.DentistId, dentist.UserId),
-                Builders<Appointment>.Filter.Ne(x => x.Status, AppointmentStatus.Completed),
-                Builders<Appointment>.Filter.Or(
-                    Builders<Appointment>.Filter.And(
-                        Builders<Appointment>.Filter.Lt(x => x.Date, requestedEnd),
-                        Builders<Appointment>.Filter.Gt(x => x.Date, requestedStart.AddMinutes(-30))
-                    )
-                )
+                Builders<Appointment>.Filter.Eq(x => x.DentistId, dentistUserId),
+                Builders<Appointment>.Filter.Lt(x => x.Date, end),
+                Builders<Appointment>.Filter.Gt(x => x.Date, start.AddMinutes(-30))
             );
 
-            var conflict = await _appointmentsCollection.Find(filter).FirstOrDefaultAsync();
-            return conflict == null;
+            if (!string.IsNullOrEmpty(appointmentIdToExclude))
+                filter &= Builders<Appointment>.Filter.Ne(x => x.Id, appointmentIdToExclude);
+
+            return !await _appointmentsCollection.Find(filter).AnyAsync();
         }
 
 
-        public async Task<bool> IsPatientAvailableAsync(string patientUserId, DateTime date)
+        public async Task<bool> IsPatientAvailableAsync(string patientUserId, DateTime newStart, string? appointmentIdToExclude = null)
         {
-            var requestedStart = date;
-            var requestedEnd = date.AddMinutes(30);
+            var newEnd = newStart.AddMinutes(30);
 
             var filter = Builders<Appointment>.Filter.And(
-                Builders<Appointment>.Filter.Eq(x => x.PatientId, patientUserId),
-                Builders<Appointment>.Filter.Ne(x => x.Status, AppointmentStatus.Completed),
-                Builders<Appointment>.Filter.Or(
-                    Builders<Appointment>.Filter.And(
-                        Builders<Appointment>.Filter.Lt(x => x.Date, requestedEnd),
-                        Builders<Appointment>.Filter.Gt(x => x.Date, requestedStart.AddMinutes(-30))
-                    )
-                )
+                Builders<Appointment>.Filter.Eq(x => x.PatientUserId, patientUserId),
+                Builders<Appointment>.Filter.Lt(x => x.Date, newEnd),
+                Builders<Appointment>.Filter.Gt(x => x.Date, newStart.AddMinutes(-30))
             );
 
-            var conflict = await _appointmentsCollection.Find(filter).FirstOrDefaultAsync();
-            return conflict == null;
+            if (!string.IsNullOrEmpty(appointmentIdToExclude))
+            {
+                filter &= Builders<Appointment>.Filter.Ne(x => x.Id, appointmentIdToExclude);
+            }
+
+            return !await _appointmentsCollection.Find(filter).AnyAsync();
         }
-
-
-
-
     }
 }
+
