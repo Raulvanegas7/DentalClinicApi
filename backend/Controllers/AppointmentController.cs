@@ -30,9 +30,9 @@ namespace DentalClinicApi.Controllers
 
         [HttpGet]
         [Authorize(Roles = "Admin,Receptionist")]
-        public async Task<ActionResult<List<Appointment>>> GetAll()
+        public async Task<ActionResult<List<Appointment>>> GetAllAppointments()
         {
-            var appointments = await _appointmentService.GetAllAppointments();
+            var appointments = await _appointmentService.GetAllAppointmentsAsync();
             return Ok(appointments);
         }
 
@@ -41,6 +41,12 @@ namespace DentalClinicApi.Controllers
         public async Task<ActionResult<List<Appointment>>> GetMyAppointments()
         {
             var dentistUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(dentistUserId))
+            {
+                throw new ArgumentException("El ID del dentista no puede ser nulo.");
+            }
+
             var appointments = await _appointmentService.GetAppointmentsByDentist(dentistUserId);
             return Ok(appointments);
         }
@@ -48,30 +54,32 @@ namespace DentalClinicApi.Controllers
 
         [HttpGet("{id}")]
         [Authorize(Roles = "Admin,Receptionist,Dentist")]
-        public async Task<ActionResult<Appointment>> GetById(string id)
+        public async Task<ActionResult<Appointment>> GetAppointmentById(string id)
         {
-            var appointment = await _appointmentService.GetOneById(id);
+            var appointment = await _appointmentService.GetAppointmentByIdAsync(id);
             if (appointment == null)
                 return NotFound();
 
             return Ok(appointment);
         }
 
+
         [HttpPost]
         [Authorize(Roles = "Admin,Receptionist")]
-        public async Task<ActionResult> Create([FromBody] CreateAppointmentDto dto)
+        public async Task<ActionResult> CreateAppointment([FromBody] CreateAppointmentDto dto)
         {
-            var newAppointment = await _appointmentService.CreateAppointment(dto);
+            var newAppointment = await _appointmentService.CreateAppointmentAsync(dto);
 
-            return CreatedAtAction(nameof(GetById),
+            return CreatedAtAction(nameof(GetAppointmentById),
                 new { id = newAppointment.Id }, newAppointment);
         }
 
+
         [HttpPatch("{id}")]
         [Authorize(Roles = "Admin,Receptionist,Dentist")]
-        public async Task<ActionResult> PartialUpdate(string id, [FromBody] UpdateAppointmentDto dto)
+        public async Task<ActionResult> UpdateAppointment(string id, [FromBody] UpdateAppointmentDto dto)
         {
-            await _appointmentService.PartialUpdateAsync(id, dto);
+            await _appointmentService.UpdateAppointmentAsync(id, dto);
             return Ok("Cita actualizada correctamente.");
         }
 
@@ -81,6 +89,11 @@ namespace DentalClinicApi.Controllers
         public async Task<ActionResult> MarkComplete(string id)
         {
             var dentistUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(dentistUserId))
+            {
+                throw new ArgumentException("El ID del dentista no puede ser nulo.");
+            }
 
             await _appointmentService.MarkCompleteAsync(id, dentistUserId);
 
@@ -92,13 +105,14 @@ namespace DentalClinicApi.Controllers
         [Authorize(Roles = "Admin,Receptionist")]
         public async Task<ActionResult> Delete(string id)
         {
-            var findApp = await _appointmentService.GetOneById(id);
+            var findApp = await _appointmentService.GetAppointmentByIdAsync(id);
             if (findApp == null)
                 return NotFound();
 
             await _appointmentService.DeleteAppointment(id);
-            return NoContent();
+            return Ok("Se ha elimindado correctamente");
         }
+
 
         [HttpGet("detailed")]
         [Authorize(Roles = "Admin,Receptionist")]

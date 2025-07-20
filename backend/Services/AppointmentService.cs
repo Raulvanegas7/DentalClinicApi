@@ -28,25 +28,26 @@ namespace DentalClinicApi.Services
             _servicesCollection = context.Services;
         }
 
-        public async Task<List<Appointment>> GetAllAppointments()
+        public async Task<List<Appointment>> GetAllAppointmentsAsync()
         {
             return await _appointmentsCollection.Find(x => true).ToListAsync();
         }
 
-        public async Task<Appointment> GetOneById(string id)
+        public async Task<List<Appointment>> GetAppointmentsByDentist(string dentistUserId)
+        {
+            var filter = Builders<Appointment>.Filter.Eq(x => x.DentistUserId, dentistUserId);
+            var result = await _appointmentsCollection.Find(filter).ToListAsync();
+            return result;
+        }
+
+        public async Task<Appointment> GetAppointmentByIdAsync(string id)
         {
             var filter = Builders<Appointment>.Filter.Eq(x => x.Id, id);
             var result = await _appointmentsCollection.Find(filter).FirstOrDefaultAsync();
             return result;
         }
 
-        public async Task<List<Appointment>> GetAppointmentsByDentist(string dentistUserId)
-        {
-            var filter = Builders<Appointment>.Filter.Eq(x => x.DentistId, dentistUserId);
-            var result = await _appointmentsCollection.Find(filter).ToListAsync();
-            return result;
-        }
-        public async Task<Appointment> CreateAppointment(CreateAppointmentDto dto)
+        public async Task<Appointment> CreateAppointmentAsync(CreateAppointmentDto dto)
         {
             var patient = await _patientsCollection.Find(x => x.UserId == dto.PatientUserId).FirstOrDefaultAsync();
             if (patient == null)
@@ -66,12 +67,13 @@ namespace DentalClinicApi.Services
             }
 
             var localHour = dto.Date.ToLocalTime().TimeOfDay;
+
             if (localHour < TimeSpan.FromHours(8) || localHour >= TimeSpan.FromHours(18))
             {
                 throw new Exception("El horario permitido es de 8:00 AM a 6:00 PM hora Colombia.");
             }
 
-            if (!await IsDentistAvailableAsync(dentist.Id, dto.Date))
+            if (!await IsDentistAvailableAsync(dentist.UserId, dto.Date))
             {
                 throw new Exception("El dentista ya tiene una cita en ese horario.");
             }
@@ -84,7 +86,7 @@ namespace DentalClinicApi.Services
             var newAppointment = new Appointment
             {
                 PatientUserId = patient.UserId,
-                DentistId = dentist.UserId,
+                DentistUserId = dentist.UserId,
                 ServiceId = dto.ServiceId,
                 Date = dto.Date,
                 Notes = dto.Notes,
@@ -97,7 +99,7 @@ namespace DentalClinicApi.Services
         }
 
 
-        public async Task PartialUpdateAsync(string id, UpdateAppointmentDto dto)
+        public async Task UpdateAppointmentAsync(string id, UpdateAppointmentDto dto)
         {
             var filter = Builders<Appointment>.Filter.Eq(x => x.Id, id);
 
@@ -117,7 +119,7 @@ namespace DentalClinicApi.Services
                 if (localHour < TimeSpan.FromHours(8) || localHour >= TimeSpan.FromHours(18))
                     throw new Exception("El horario permitido es de 8:00 AM a 6:00 PM hora Colombia.");
 
-                if (!await IsDentistAvailableAsync(appointment.DentistId, newDate, appointment.Id))
+                if (!await IsDentistAvailableAsync(appointment.DentistUserId, newDate, appointment.Id))
                     throw new Exception("El odontólogo no está disponible en ese horario.");
 
                 if (!await IsPatientAvailableAsync(appointment.PatientUserId, newDate, appointment.Id))
@@ -156,7 +158,7 @@ namespace DentalClinicApi.Services
             var result = appointments.Select(app =>
             {
                 var patient = patients.FirstOrDefault(p => p.UserId == app.PatientUserId);
-                var dentist = dentists.FirstOrDefault(d => d.UserId == app.DentistId);
+                var dentist = dentists.FirstOrDefault(d => d.UserId == app.DentistUserId);
                 var service = services.FirstOrDefault(s => s.Id == app.ServiceId);
 
                 return new AppointmentDetailDto
@@ -190,11 +192,11 @@ namespace DentalClinicApi.Services
 
         public async Task MarkCompleteAsync(string id, string dentistUserId)
         {
-            var appointment = await GetOneById(id);
+            var appointment = await GetAppointmentByIdAsync(id);
             if (appointment == null)
                 throw new Exception("La cita no existe.");
 
-            if (appointment.DentistId != dentistUserId)
+            if (appointment.DentistUserId != dentistUserId)
                 throw new Exception("No tiene permiso para completar esta cita.");
 
             var filter = Builders<Appointment>.Filter.Eq(x => x.Id, id);
@@ -211,15 +213,11 @@ namespace DentalClinicApi.Services
 
         public async Task<bool> IsDentistAvailableAsync(string dentistUserId, DateTime date, string? appointmentIdToExclude = null)
         {
-            // var dentist = await _dentistsCollection.Find(x => x.UserId == dentistUserId).FirstOrDefaultAsync();
-            // if (dentist == null)
-            //     throw new Exception("El odontólogo no existe.");
-
             var start = date;
             var end = date.AddMinutes(30);
 
             var filter = Builders<Appointment>.Filter.And(
-                Builders<Appointment>.Filter.Eq(x => x.DentistId, dentistUserId),
+                Builders<Appointment>.Filter.Eq(x => x.DentistUserId, dentistUserId),
                 Builders<Appointment>.Filter.Lt(x => x.Date, end),
                 Builders<Appointment>.Filter.Gt(x => x.Date, start.AddMinutes(-30))
             );
