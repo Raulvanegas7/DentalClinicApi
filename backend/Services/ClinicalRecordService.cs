@@ -61,7 +61,7 @@ namespace DentalClinicApi.Services
             {
                 AppointmentId = appointment.Id,
                 PatientUserId = appointment.PatientUserId,
-                DentistUserId = appointment.DentistId,
+                DentistUserId = appointment.DentistUserId,
                 ServiceId = appointment.ServiceId,
                 Diagnosis = dto.Diagnosis,
                 Treatment = dto.Treatment,
