@@ -40,7 +40,6 @@ namespace DentalClinicApi.Services
             return _jwtService.GenerateToken(newUser);
         }
 
-        // Login
         public async Task<string?> Login(LoginDto dto)
         {
             var user = await _usersCollection.Find(u => u.Email == dto.Email).FirstOrDefaultAsync();
@@ -50,9 +49,9 @@ namespace DentalClinicApi.Services
             return _jwtService.GenerateToken(user);
         }
 
-        public async Task<User?> GetById(string id)
-        {
-            return await _usersCollection.Find(u => u.Id == id).FirstOrDefaultAsync();
-        }
+        // public async Task<User?> GetById(string id)
+        // {
+        //     return await _usersCollection.Find(u => u.Id == id).FirstOrDefaultAsync();
+        // }
     }
 }

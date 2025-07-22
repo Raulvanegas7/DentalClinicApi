@@ -193,6 +193,7 @@ namespace DentalClinicApi.Services
         public async Task MarkCompleteAsync(string id, string dentistUserId)
         {
             var appointment = await GetAppointmentByIdAsync(id);
+
             if (appointment == null)
                 throw new Exception("La cita no existe.");
 
@@ -203,12 +204,6 @@ namespace DentalClinicApi.Services
             var update = Builders<Appointment>.Update.Set(x => x.Status, AppointmentStatus.Completed);
 
             await _appointmentsCollection.UpdateOneAsync(filter, update);
-        }
-
-        public async Task<bool> ServiceExists(string serviceId)
-        {
-            var filter = Builders<Service>.Filter.Eq(x => x.Id, serviceId);
-            return await _servicesCollection.Find(filter).AnyAsync();
         }
 
         public async Task<bool> IsDentistAvailableAsync(string dentistUserId, DateTime date, string? appointmentIdToExclude = null)
@@ -246,6 +241,7 @@ namespace DentalClinicApi.Services
 
             return !await _appointmentsCollection.Find(filter).AnyAsync();
         }
+
     }
 }
 
