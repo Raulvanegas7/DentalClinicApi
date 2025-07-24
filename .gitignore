@@ -22,3 +22,6 @@ Thumbs.db
 *.tmp
 *.exe
 *.dll
+
+
+node_modules/
