@@ -24,4 +24,28 @@ Thumbs.db
 *.dll
 
 
+
 node_modules/
+
+# Node modules
+node_modules/
+
+# Next.js
+.next/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment variables
+.env
+
+# Build output
+dist/
+build/
+
+# OS-specific
+.DS_Store
+Thumbs.db
+
