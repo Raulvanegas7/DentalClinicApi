@@ -24,6 +24,9 @@ Thumbs.db
 *.dll
 
 
+
+node_modules/
+
 # Node modules
 node_modules/
 
@@ -45,3 +48,4 @@ build/
 # OS-specific
 .DS_Store
 Thumbs.db
+
