@@ -6,7 +6,7 @@ backend/obj/
 *.sln.docstates
 backend/.vs/
 *.http
-backend/appsettings.Development.json
+backend/appsettings.json
 backend/Borrador/
 
 # === FRONTEND ===
