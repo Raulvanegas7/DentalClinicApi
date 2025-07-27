@@ -40,10 +40,10 @@ namespace DentalClinicApi.Services
         public async Task<string> RegisterUserWithDentistAsync(CreateDentistDto dto)
         {
             var existingUser = await _usersCollection.Find(u => u.Email == dto.Email).FirstOrDefaultAsync();
-            if (existingUser != null) return null;
+            if (existingUser != null) return null!;
 
             var existingDentist = await _dentistsCollection.Find(x => x.Email == dto.Email).FirstOrDefaultAsync();
-            if (existingDentist != null) return null;
+            if (existingDentist != null) return null!;
 
             var newUser = new User
             {
