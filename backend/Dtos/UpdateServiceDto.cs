@@ -9,10 +9,10 @@ namespace backend.Dtos
     public class UpdateServiceDto
     {
         [BsonElement("name")]
-        public string Name { get; set; }
+        public string Name { get; set; } = null!;
 
         [BsonElement("description")]
-        public string Description { get; set; }
+        public string Description { get; set; } = null!;
 
         [BsonElement("price")]
         public decimal? Price { get; set; }

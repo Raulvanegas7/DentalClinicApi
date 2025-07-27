@@ -23,7 +23,7 @@ namespace DentalClinicApi.Models
         public string DentistUserId { get; set; } = null!;
 
         [BsonRepresentation(BsonType.ObjectId)]
-        public string ServiceId { get; set; } = null;
+        public string ServiceId { get; set; } = null!;
 
         public string Diagnosis { get; set; } = null!;
 

@@ -86,14 +86,14 @@ namespace DentalClinicApi.Services
         {
             var filter = Builders<ClinicalRecord>.Filter.Eq(x => x.Id, (id));
             var clinicalRecord = await _clinicalRecordsCollection.Find(filter).FirstOrDefaultAsync();
-            if (clinicalRecord == null) return null;
+            if (clinicalRecord == null) return null!;
 
             var appointment = await _appointmentsCollection.Find(x => x.Id == clinicalRecord.AppointmentId).FirstOrDefaultAsync();
             var dentist = await _dentistsCollection.Find(x => x.UserId == clinicalRecord.DentistUserId).FirstOrDefaultAsync();
             var patient = await _patientsCollection.Find(x => x.UserId == clinicalRecord.PatientUserId).FirstOrDefaultAsync();
             var service = await _servicesCollection.Find(x => x.Id == appointment.ServiceId).FirstOrDefaultAsync();
 
-            if (appointment == null || dentist == null || patient == null || service == null) return null;
+            if (appointment == null || dentist == null || patient == null || service == null) return null!;
 
             return new ClinicalRecordDetailedDto
             {
