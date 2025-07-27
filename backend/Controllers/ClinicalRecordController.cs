@@ -30,6 +30,15 @@ namespace DentalClinicApi.Controllers
             return Ok(records);
         }
 
+        [HttpGet("byPatientDetailed/{patientId}")]
+        [Authorize(Roles = "Admin,Receptionist,Dentist")]
+        public async Task<ActionResult<ClinicalRecord>> GetByPatientDetailed(string patientId)
+        {
+            var clinicalRecordDetailed = await _clinicalRecordService.GetBytPatientDetailAsync(patientId);
+            return Ok(clinicalRecordDetailed);
+        }
+
+
         [HttpGet("byAppointmentId/{appointmentId}")]
         [Authorize(Roles = "Admin,Receptionist,Dentist")]
         public async Task<ActionResult<ClinicalRecord?>> GetByAppointmentId(string appointmentId)
