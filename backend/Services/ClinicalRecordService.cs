@@ -40,7 +40,7 @@ namespace DentalClinicApi.Services
 
         public async Task<ClinicalRecordDetailedDto> GetBytPatientDetailAsync(string patientUserId)
         {
-           var filter = Builders<ClinicalRecord>.Filter.Eq(x => x.PatientUserId, patientUserId);
+            var filter = Builders<ClinicalRecord>.Filter.Eq(x => x.PatientUserId, patientUserId);
             var clinicalRecord = await _clinicalRecordsCollection.Find(filter).FirstOrDefaultAsync();
             if (clinicalRecord == null) return null!;
 
@@ -83,15 +83,62 @@ namespace DentalClinicApi.Services
                     Specialty = dentist.Specialty
                 }
             };
-            
+
         }
-        
+
         public async Task<ClinicalRecord?> GetByAppointmentIdAsync(string appointmentId)
         {
             return await _clinicalRecordsCollection.Find(x => x.AppointmentId == appointmentId).FirstOrDefaultAsync();
         }
 
+        public async Task<ClinicalRecordDetailedDto> GetByAppointmentDetailAsync(string appointmentId)
+        {
+            var clinicalRecord = await _clinicalRecordsCollection.Find(x => x.AppointmentId == appointmentId).FirstOrDefaultAsync();
+            if (clinicalRecord == null)
+                throw new Exception("No se encuentra");
 
+            var appointment = await _appointmentsCollection.Find(x => x.Id == clinicalRecord.AppointmentId).FirstOrDefaultAsync();
+            var patient = await _patientsCollection.Find(x => x.UserId == clinicalRecord.PatientUserId).FirstOrDefaultAsync();
+            var dentist = await _dentistsCollection.Find(x => x.UserId == clinicalRecord.DentistUserId).FirstOrDefaultAsync();
+            var service = await _servicesCollection.Find(x => x.Id == clinicalRecord.ServiceId).FirstOrDefaultAsync();
+
+            if (appointment == null || patient == null || dentist == null || service == null)
+                throw new Exception("Error");
+
+            return new ClinicalRecordDetailedDto
+            {
+                Id = clinicalRecord.Id,
+                Diagnosis = clinicalRecord.Diagnosis,
+                Treatment = clinicalRecord.Treatment,
+                Notes = clinicalRecord.Notes,
+                Appointment = new AppoinmentMiniDtoCr
+                {
+                    Id = appointment.Id,
+                    Date = appointment.Date,
+                    Status = appointment.Status,
+                    Service = new ServiceDtoCr
+                    {
+                        Id = service.Id,
+                        Name = service.Name,
+                        Price = service.Price
+                    }
+                },
+                Patient = new PatientMiniDtoCr
+                {
+                    Id = patient.Id,
+                    Name = patient.Name,
+                    Email = patient.Email,
+                    Phone = patient.Phone
+                },
+                Dentist = new DentistMiniDtoCr
+                {
+                    Id = dentist.Id,
+                    Name = dentist.Name,
+                    Specialty = dentist.Specialty
+                }
+            };
+
+        }
 
         public async Task<ClinicalRecord> CreateClinicalRecordAsync(CreateClinicalRecordDto dto)
         {

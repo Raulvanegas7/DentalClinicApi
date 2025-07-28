@@ -39,6 +39,15 @@ namespace DentalClinicApi.Controllers
         }
 
 
+        [HttpGet("byAppointmentDetailed/{appointmentId}")]
+        [Authorize(Roles = "Admin,Receptionist,Dentist")]
+        public async Task<ActionResult<ClinicalRecord>> GetByAppointmentDetailed(string appointmentId)
+        {
+            var clinicalRecordDetailed = await _clinicalRecordService.GetByAppointmentDetailAsync(appointmentId);
+            return Ok(clinicalRecordDetailed);
+        }
+
+
         [HttpGet("byAppointmentId/{appointmentId}")]
         [Authorize(Roles = "Admin,Receptionist,Dentist")]
         public async Task<ActionResult<ClinicalRecord?>> GetByAppointmentId(string appointmentId)
