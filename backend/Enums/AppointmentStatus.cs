@@ -4,6 +4,8 @@ namespace backend.Enums
     {
         Scheduled,
         Completed,
-        Cancelled
+        Cancelled,
+        Confirmed,
+        Missed
     }
 }
