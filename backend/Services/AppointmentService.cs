@@ -241,7 +241,6 @@ namespace DentalClinicApi.Services
 
             return !await _appointmentsCollection.Find(filter).AnyAsync();
         }
-
     }
 }
 
