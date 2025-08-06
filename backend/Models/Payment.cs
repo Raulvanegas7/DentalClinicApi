@@ -12,16 +12,16 @@ namespace backend.Models
     {
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
-        public string Id { get; set; }
+        public string Id { get; set; } = string.Empty;
 
         // ID de la cita asociada a este pago
         [BsonElement("appointmentId")]
         [BsonRepresentation(BsonType.ObjectId)]
-        public string AppointmentId { get; set; }
+        public string AppointmentId { get; set; } = string.Empty;
 
         // Método de pago: efectivo, datáfono, tarjeta en línea, etc.
         [BsonElement("paymentMethod")]
-        public string PaymentMethod { get; set; }
+        public string PaymentMethod { get; set; } = string.Empty;
 
         // Estado del pago: Pending, Paid, Refunded
         [BsonElement("status")]
@@ -37,7 +37,7 @@ namespace backend.Models
 
         // Nombre del paciente (opcional, puede usarse para búsquedas rápidas)
         [BsonElement("patientName")]
-        public string PatientName { get; set; }
+        public string PatientName { get; set; } = string.Empty;
 
         // Observaciones del recepcionista si fue un pago presencial
         [BsonElement("notes")]
