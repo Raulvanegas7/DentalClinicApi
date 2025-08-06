@@ -22,15 +22,13 @@ namespace DentalClinicApi.Models
         [BsonElement("specialty")]
         public string Specialty { get; set; } = string.Empty;
 
-        [BsonElement("email")]
-        [EmailAddress]
-        public string Email { get; set; } = string.Empty;
-
         [BsonElement("phone")]
         public string Phone { get; set; } = string.Empty;
 
         [BsonElement("userId")]
         [BsonRepresentation(BsonType.ObjectId)]
         public string UserId { get; set; } = string.Empty;
+
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 }
