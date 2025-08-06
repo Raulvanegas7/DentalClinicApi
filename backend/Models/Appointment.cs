@@ -16,7 +16,7 @@ namespace DentalClinicApi.Models
 
         [BsonElement("patientUserId")]
         [BsonRepresentation(BsonType.ObjectId)]
-        public string PatientUserId { get; set; } = string.Empty;
+        public string PatientId { get; set; } = string.Empty;
 
         [BsonElement("dentistUserId")]
         [BsonRepresentation(BsonType.ObjectId)]
@@ -33,9 +33,14 @@ namespace DentalClinicApi.Models
         [BsonRepresentation(BsonType.String)]
         public AppointmentStatus Status { get; set; } = AppointmentStatus.Scheduled;
 
-        [BsonElement("notes")]
-        public string Notes { get; set; } = string.Empty;
-        [BsonElement("createdAt")]  
+        public string PaymentStatus { get; set; } = "pending";
+
+        [BsonElement("observations")]
+        public string Observations { get; set; } = string.Empty;
+
+        [BsonElement("createdAt")]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        
+        public DateTime? UpdatedAt { get; set; }
     }
 }
