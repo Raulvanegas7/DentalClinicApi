@@ -4,7 +4,6 @@ namespace backend.Enums
     {
         Admin,
         Receptionist,
-        Dentist,
-        Patient
+        Dentist
     }
 }

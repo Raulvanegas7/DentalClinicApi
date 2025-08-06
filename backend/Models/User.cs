@@ -15,7 +15,7 @@ namespace DentalClinicApi.Models
         public string Id { get; set; } = string.Empty;
 
         [BsonElement("username")]
-        public string Username { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
 
         [BsonElement("email")]
         public string Email { get; set; } = string.Empty;
@@ -27,8 +27,8 @@ namespace DentalClinicApi.Models
         [BsonRepresentation(MongoDB.Bson.BsonType.String)]
         public UserRole Role { get; set; }
 
-        [BsonElement("status")]
+        [BsonElement("isActive")]
         [BsonRepresentation(MongoDB.Bson.BsonType.String)]
-        public UserStatus Status { get; set; } = UserStatus.Active;
+        public bool IsActive { get; set; } = true;
     }
 }

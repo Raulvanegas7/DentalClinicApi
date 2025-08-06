@@ -30,7 +30,6 @@ namespace DentalClinicApi.Services
 
             var newUser = new User
             {
-                Username = dto.Username,
                 Email = dto.Email,
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
                 Role = dto.Role 
@@ -48,10 +47,5 @@ namespace DentalClinicApi.Services
 
             return _jwtService.GenerateToken(user);
         }
-
-        // public async Task<User?> GetById(string id)
-        // {
-        //     return await _usersCollection.Find(u => u.Id == id).FirstOrDefaultAsync();
-        // }
     }
 }
