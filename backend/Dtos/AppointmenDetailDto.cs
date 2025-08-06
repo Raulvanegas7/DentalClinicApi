@@ -4,7 +4,7 @@ namespace DentalClinicApi.Dtos
     {
         public string Id { get; set; } = string.Empty;
         public DateTime Date { get; set; }
-        public string Notes { get; set; } = string.Empty;
+        public string Observations { get; set; } = string.Empty;
 
         public PatientMiniDto Patient { get; set; } = default!;
         public DentistMiniDto Dentist { get; set; } = default!;

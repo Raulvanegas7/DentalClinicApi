@@ -49,7 +49,7 @@ namespace DentalClinicApi.Services
 
         public async Task<Appointment> CreateAppointmentAsync(CreateAppointmentDto dto)
         {
-            var patient = await _patientsCollection.Find(x => x.UserId == dto.PatientUserId).FirstOrDefaultAsync();
+            var patient = await _patientsCollection.Find(x => x.Id == dto.PatientId).FirstOrDefaultAsync();
             if (patient == null)
                 throw new Exception("El paciente no existe");
 
@@ -75,21 +75,21 @@ namespace DentalClinicApi.Services
 
             if (!await IsDentistAvailableAsync(dentist.UserId, dto.Date))
             {
-                throw new Exception("El dentista ya tiene una cita en ese horario.");
+                throw new Exception("El dentista no está disponible en ese horario.");
             }
 
-            if (!await IsPatientAvailableAsync(patient.UserId, dto.Date))
+            if (!await IsPatientAvailableAsync(patient.Id, dto.Date))
             {
                 throw new Exception("El paciente ya tiene una cita en ese horario.");
             }
 
             var newAppointment = new Appointment
             {
-                PatientUserId = patient.UserId,
+                PatientId = patient.Id,
                 DentistUserId = dentist.UserId,
                 ServiceId = dto.ServiceId,
                 Date = dto.Date,
-                Notes = dto.Notes,
+                Observations = dto.Observations,
                 Status = AppointmentStatus.Scheduled,
                 CreatedAt = DateTime.UtcNow
             };
@@ -122,14 +122,14 @@ namespace DentalClinicApi.Services
                 if (!await IsDentistAvailableAsync(appointment.DentistUserId, newDate, appointment.Id))
                     throw new Exception("El odontólogo no está disponible en ese horario.");
 
-                if (!await IsPatientAvailableAsync(appointment.PatientUserId, newDate, appointment.Id))
+                if (!await IsPatientAvailableAsync(appointment.Id, newDate, appointment.Id))
                     throw new Exception("El paciente no está disponible en ese horario.");
 
                 updates.Add(Builders<Appointment>.Update.Set(x => x.Date, newDate));
             }
 
-            if (!string.IsNullOrWhiteSpace(dto.Notes))
-                updates.Add(Builders<Appointment>.Update.Set(x => x.Notes, dto.Notes));
+            if (!string.IsNullOrWhiteSpace(dto.Observations))
+                updates.Add(Builders<Appointment>.Update.Set(x => x.Observations, dto.Observations));
 
             if (dto.Status.HasValue)
                 updates.Add(Builders<Appointment>.Update.Set(x => x.Status, dto.Status.Value));
@@ -157,7 +157,7 @@ namespace DentalClinicApi.Services
 
             var result = appointments.Select(app =>
             {
-                var patient = patients.FirstOrDefault(p => p.UserId == app.PatientUserId);
+                var patient = patients.FirstOrDefault(p => p.Id == app.PatientId);
                 var dentist = dentists.FirstOrDefault(d => d.UserId == app.DentistUserId);
                 var service = services.FirstOrDefault(s => s.Id == app.ServiceId);
 
@@ -165,7 +165,7 @@ namespace DentalClinicApi.Services
                 {
                     Id = app.Id,
                     Date = app.Date,
-                    Notes = app.Notes,
+                    Observations = app.Observations,
                     Patient = new PatientMiniDto
                     {
                         Id = patient?.Id ?? string.Empty,
@@ -224,12 +224,12 @@ namespace DentalClinicApi.Services
         }
 
 
-        public async Task<bool> IsPatientAvailableAsync(string patientUserId, DateTime newStart, string? appointmentIdToExclude = null)
+        public async Task<bool> IsPatientAvailableAsync(string patientId, DateTime newStart, string? appointmentIdToExclude = null)
         {
             var newEnd = newStart.AddMinutes(30);
 
             var filter = Builders<Appointment>.Filter.And(
-                Builders<Appointment>.Filter.Eq(x => x.PatientUserId, patientUserId),
+                Builders<Appointment>.Filter.Eq(x => x.PatientId, patientId),
                 Builders<Appointment>.Filter.Lt(x => x.Date, newEnd),
                 Builders<Appointment>.Filter.Gt(x => x.Date, newStart.AddMinutes(-30))
             );

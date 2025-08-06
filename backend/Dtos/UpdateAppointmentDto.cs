@@ -11,7 +11,7 @@ namespace backend.Dtos
     {
         public DateTime? Date { get; set; }
 
-        public string Notes { get; set; } = string.Empty;
+        public string Observations { get; set; } = string.Empty;
 
         public AppointmentStatus? Status { get; set; }
     }
