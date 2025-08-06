@@ -42,12 +42,9 @@ namespace DentalClinicApi.Services
             var existingUser = await _usersCollection.Find(u => u.Email == dto.Email).FirstOrDefaultAsync();
             if (existingUser != null) return null!;
 
-            var existingDentist = await _dentistsCollection.Find(x => x.Email == dto.Email).FirstOrDefaultAsync();
-            if (existingDentist != null) return null!;
 
             var newUser = new User
             {
-                Username = dto.Email,
                 Email = dto.Email,
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
                 Role = UserRole.Dentist
@@ -59,7 +56,6 @@ namespace DentalClinicApi.Services
             {
                 Name = dto.Name,
                 Specialty = dto.Specialty,
-                Email = dto.Email,
                 Phone = dto.Phone,
                 UserId = newUser.Id
             };
@@ -77,9 +73,6 @@ namespace DentalClinicApi.Services
 
             if (!string.IsNullOrWhiteSpace(dto.Name))
                 updates.Add(Builders<Dentist>.Update.Set(x => x.Name, dto.Name));
-
-            if (!string.IsNullOrWhiteSpace(dto.Email))
-                updates.Add(Builders<Dentist>.Update.Set(x => x.Email, dto.Email));
 
             if (!string.IsNullOrWhiteSpace(dto.Specialty))
                 updates.Add(Builders<Dentist>.Update.Set(x => x.Specialty, dto.Specialty));
