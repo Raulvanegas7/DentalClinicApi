@@ -37,10 +37,10 @@ namespace DentalClinicApi.Services
             return result;
         }
 
-        public async Task<string> RegisterUserWithDentistAsync(CreateDentistDto dto)
+        public async Task<bool> RegisterUserWithDentistAsync(CreateDentistDto dto)
         {
             var existingUser = await _usersCollection.Find(u => u.Email == dto.Email).FirstOrDefaultAsync();
-            if (existingUser != null) return null!;
+            if (existingUser != null) return false;
 
 
             var newUser = new User
@@ -62,7 +62,7 @@ namespace DentalClinicApi.Services
 
             await _dentistsCollection.InsertOneAsync(newDentist);
 
-            return _jwtService.GenerateToken(newUser);
+            return true;
         }
 
         public async Task PartialUpdateAsync(string id, UpdateDentistDto dto)
@@ -91,8 +91,13 @@ namespace DentalClinicApi.Services
 
         public async Task DeleteDentist(string id)
         {
-            var filter = Builders<Dentist>.Filter.Eq(x => x.Id, id);
-            await _dentistsCollection.DeleteOneAsync(filter);
+            var dentist = await _dentistsCollection.Find(x => x.Id == id).FirstOrDefaultAsync();
+            if (dentist == null) return;
+
+            await _dentistsCollection.DeleteOneAsync(x => x.Id == id);
+            
+            var userFilter = Builders<User>.Filter.Eq(x => x.Id, dentist.UserId);
+            await _usersCollection.DeleteOneAsync(userFilter);
         }
     }
 }
