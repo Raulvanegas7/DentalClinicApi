@@ -41,9 +41,9 @@ namespace DentalClinicApi.Controllers
 
         [HttpPost("register")]
         [Authorize(Roles = "Admin,Receptionist")]
-        public async Task<ActionResult> RegisterPatientWithUser([FromBody] CreatePatientDto dto)
+        public async Task<ActionResult> RegisterPatient([FromBody] CreatePatientDto dto)
         {
-            await _patientService.RegisterPatientWithUserAsync(dto);
+            await _patientService.RegisterPatientAsync(dto);
             return Ok(new { message = "Registro exitoso"});
         }
 
