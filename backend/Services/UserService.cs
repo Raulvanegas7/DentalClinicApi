@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using backend.Dtos;
 using backend.Enums;
 using DentalClinicApi.Contexts;
 using DentalClinicApi.Dtos;
@@ -22,21 +23,21 @@ namespace DentalClinicApi.Services
             _jwtService = jwtService;
         }
 
-        public async Task<string?> RegisterUser(RegisterDto dto)
+        public async Task<LoginResponseDto?> RegisterUser(RegisterDto dto)
         {
-            var existingUser = await _usersCollection.Find(u => u.Email == dto.Email).FirstOrDefaultAsync();
-            if (existingUser != null)
+            var user = await _usersCollection.Find(u => u.Email == dto.Email).FirstOrDefaultAsync();
+            if (user == null || !BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
                 return null;
 
-            var newUser = new User
-            {
-                Email = dto.Email,
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
-                Role = dto.Role 
-            };
+            var token = _jwtService.GenerateToken(user);
 
-            await _usersCollection.InsertOneAsync(newUser);
-            return _jwtService.GenerateToken(newUser);
+            return new LoginResponseDto
+            {
+                Token = token,
+                Name = dto.Name,
+                Email = dto.Email,
+                Role = user.Role.ToString()
+            };
         }
 
         public async Task<string?> Login(LoginDto dto)

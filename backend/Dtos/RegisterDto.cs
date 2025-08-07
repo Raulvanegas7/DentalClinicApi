@@ -11,7 +11,7 @@ namespace DentalClinicApi.Dtos
     {
         [Required(ErrorMessage = "El nombre de usuario es obligatorio.")]
         [MinLength(3, ErrorMessage = "El nombre de usuario debe tener al menos 3 caracteres.")]
-        public string Username { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "El correo electrónico es obligatorio.")]
         [EmailAddress(ErrorMessage = "El correo electrónico no es válido.")]
