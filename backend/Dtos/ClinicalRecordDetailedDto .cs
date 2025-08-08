@@ -11,7 +11,7 @@ namespace backend.Dtos
         public string Id { get; set; } = string.Empty;
         public string Diagnosis { get; set; } = null!;
         public string Treatment { get; set; } = null!;
-        public string Notes { get; set; } = null!;
+        public string Observations { get; set; } = null!;
         public DateTime CreatedAt { get; set; }
         public AppoinmentMiniDtoCr Appointment { get; set; } = null!;
         public PatientMiniDtoCr Patient { get; set; } = null!;
