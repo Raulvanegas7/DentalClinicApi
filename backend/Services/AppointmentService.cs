@@ -122,7 +122,7 @@ namespace DentalClinicApi.Services
                 if (!await IsDentistAvailableAsync(appointment.DentistUserId, newDate, appointment.Id))
                     throw new Exception("El odontólogo no está disponible en ese horario.");
 
-                if (!await IsPatientAvailableAsync(appointment.Id, newDate, appointment.Id))
+                if (!await IsPatientAvailableAsync(appointment.PatientId, newDate, appointment.Id))
                     throw new Exception("El paciente no está disponible en ese horario.");
 
                 updates.Add(Builders<Appointment>.Update.Set(x => x.Date, newDate));
