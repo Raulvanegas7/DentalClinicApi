@@ -17,7 +17,7 @@ namespace DentalClinicApi.Models
         public string AppointmentId { get; set; } = null!;
 
         [BsonRepresentation(BsonType.ObjectId)]
-        public string PatientUserId { get; set; } = null!;
+        public string PatientId { get; set; } = null!;
 
         [BsonRepresentation(BsonType.ObjectId)]
         public string DentistUserId { get; set; } = null!;
@@ -29,7 +29,7 @@ namespace DentalClinicApi.Models
 
         public string Treatment { get; set; } = null!;
 
-        public string Notes { get; set; } = string.Empty;
+        public string Observations { get; set; } = string.Empty;
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }

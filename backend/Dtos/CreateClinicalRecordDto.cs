@@ -19,6 +19,6 @@ namespace DentalClinicApi.Dtos
         [MinLength(3)]
         public string Treatment { get; set; } = null!;
 
-        public string Notes { get; set; } = string.Empty;
+        public string Observations { get; set; } = string.Empty;
     }
 }

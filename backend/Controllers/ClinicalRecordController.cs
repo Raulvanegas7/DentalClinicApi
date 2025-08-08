@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using backend.Dtos;
 using DentalClinicApi.Dtos;
@@ -67,15 +68,29 @@ namespace DentalClinicApi.Controllers
             return Ok(allrecords);
         }
 
+        [HttpGet("{id}")]
+        [Authorize(Roles = "Admin,Dentist")]
+        public async Task<ActionResult<ClinicalRecord>> GetById(string id)
+        {
+            var record = await _clinicalRecordService.GetByIdAsync(id);
+            return Ok(record);
+        }
+
+
         [HttpPost]
         [Authorize(Roles = "Admin,Dentist")]
         public async Task<ActionResult<ClinicalRecord>> CreateClinicalRecord([FromBody] CreateClinicalRecordDto dto)
         {
-            var newRecord = await _clinicalRecordService.CreateClinicalRecordAsync(dto);
+            var loggedUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
 
-            return CreatedAtAction(nameof(GetByAppointmentId),
-             new { appointmentId = newRecord.AppointmentId },
-             newRecord);
+            if (string.IsNullOrEmpty(loggedUserId) || string.IsNullOrEmpty(userRole))
+                return Unauthorized("No se pudo obtener la información del usuario logueado.");
+
+            var result = await _clinicalRecordService.CreateClinicalRecordAsync(dto, loggedUserId, userRole);
+            return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
+
+
         }
 
         [HttpGet("detail/{id}")]
