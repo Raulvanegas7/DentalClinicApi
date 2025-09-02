@@ -8,6 +8,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.OpenApi.Models;
 using DentalClinicApi.Swagger;
+using backend.Models;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -25,6 +26,7 @@ builder.Services.AddSingleton<AppointmentService>();
 builder.Services.AddSingleton<UserService>();
 builder.Services.AddSingleton<ClinicalRecordService>();
 builder.Services.AddSingleton<JwtService>();
+builder.Services.AddSingleton<Payment>();
 
 
 var jwtKey = builder.Configuration["Jwt:Key"];
@@ -86,8 +88,6 @@ builder.Services.AddCors(options =>
               .AllowAnyHeader();
     });
 });
-
-
 
 var app = builder.Build();
 

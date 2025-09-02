@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using backend.Models;
 using DentalClinicApi.Configurations;
 using DentalClinicApi.Models;
 using Microsoft.Extensions.Options;
@@ -21,7 +22,7 @@ namespace DentalClinicApi.Contexts
 
         public IMongoCollection<Patient> Patients =>
             _database.GetCollection<Patient>("Patients");
-            
+
         public IMongoCollection<Dentist> Dentists =>
             _database.GetCollection<Dentist>("Dentists");
 
@@ -36,5 +37,8 @@ namespace DentalClinicApi.Contexts
 
         public IMongoCollection<ClinicalRecord> ClinicalRecords =>
             _database.GetCollection<ClinicalRecord>("ClinicalRecords");
+
+        public IMongoCollection<Payment> Payments =>
+            _database.GetCollection<Payment>("Payments");
     }
 }

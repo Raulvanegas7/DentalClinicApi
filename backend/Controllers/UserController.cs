@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using backend.Dtos;
 using DentalClinicApi.Dtos;
 using DentalClinicApi.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -32,13 +33,13 @@ namespace DentalClinicApi.Controllers
         }
 
         [HttpPost("signin")]
-        public async Task<ActionResult<string>> SignIn([FromBody] LoginDto dto)
+        public async Task<ActionResult<LoginResponseDto>> SignIn([FromBody] LoginDto dto)
         {
-            var token = await _userService.Login(dto);
-            if (token == null)
+            var response = await _userService.Login(dto);
+            if (response == null)
                 return Unauthorized("Credenciales inválidas.");
 
-            return Ok(new { token });
+            return Ok(response);
         }
     }
 }

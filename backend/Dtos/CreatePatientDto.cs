@@ -13,17 +13,16 @@ namespace backend.Dtos
         public string Name { get; set; } = null!;
 
         [Required]
+        [EmailAddress]
+        public string Email { get; set; } = null!;
+        
+        [Required]
         public string Phone { get; set; } = null!;
 
         [Required]
         public DateTime BirthDate { get; set; }
 
-        [Required]
-        [EmailAddress]
-        public string Email { get; set; } = null!;
+        public string? Address { get; set; }
 
-        [Required]
-        [MinLength(6, ErrorMessage = "La contraseña debe tener al menos 6 caracteres.")]
-        public string Password { get; set; } = null!;
     }
 }

@@ -37,17 +37,14 @@ namespace DentalClinicApi.Services
             return result;
         }
 
-        public async Task<string> RegisterUserWithDentistAsync(CreateDentistDto dto)
+        public async Task<bool> RegisterUserWithDentistAsync(CreateDentistDto dto)
         {
             var existingUser = await _usersCollection.Find(u => u.Email == dto.Email).FirstOrDefaultAsync();
-            if (existingUser != null) return null!;
+            if (existingUser != null) return false;
 
-            var existingDentist = await _dentistsCollection.Find(x => x.Email == dto.Email).FirstOrDefaultAsync();
-            if (existingDentist != null) return null!;
 
             var newUser = new User
             {
-                Username = dto.Email,
                 Email = dto.Email,
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
                 Role = UserRole.Dentist
@@ -59,14 +56,13 @@ namespace DentalClinicApi.Services
             {
                 Name = dto.Name,
                 Specialty = dto.Specialty,
-                Email = dto.Email,
                 Phone = dto.Phone,
                 UserId = newUser.Id
             };
 
             await _dentistsCollection.InsertOneAsync(newDentist);
 
-            return _jwtService.GenerateToken(newUser);
+            return true;
         }
 
         public async Task PartialUpdateAsync(string id, UpdateDentistDto dto)
@@ -77,9 +73,6 @@ namespace DentalClinicApi.Services
 
             if (!string.IsNullOrWhiteSpace(dto.Name))
                 updates.Add(Builders<Dentist>.Update.Set(x => x.Name, dto.Name));
-
-            if (!string.IsNullOrWhiteSpace(dto.Email))
-                updates.Add(Builders<Dentist>.Update.Set(x => x.Email, dto.Email));
 
             if (!string.IsNullOrWhiteSpace(dto.Specialty))
                 updates.Add(Builders<Dentist>.Update.Set(x => x.Specialty, dto.Specialty));
@@ -98,8 +91,13 @@ namespace DentalClinicApi.Services
 
         public async Task DeleteDentist(string id)
         {
-            var filter = Builders<Dentist>.Filter.Eq(x => x.Id, id);
-            await _dentistsCollection.DeleteOneAsync(filter);
+            var dentist = await _dentistsCollection.Find(x => x.Id == id).FirstOrDefaultAsync();
+            if (dentist == null) return;
+
+            await _dentistsCollection.DeleteOneAsync(x => x.Id == id);
+            
+            var userFilter = Builders<User>.Filter.Eq(x => x.Id, dentist.UserId);
+            await _usersCollection.DeleteOneAsync(userFilter);
         }
     }
 }

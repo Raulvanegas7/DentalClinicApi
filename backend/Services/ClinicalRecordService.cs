@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using backend.Dtos;
+using backend.Enums;
 using DentalClinicApi.Contexts;
 using DentalClinicApi.Dtos;
 using DentalClinicApi.Models;
@@ -33,20 +34,30 @@ namespace DentalClinicApi.Services
             return await _clinicalRecordsCollection.Find(x => true).ToListAsync();
         }
 
-        public async Task<List<ClinicalRecord>> GetByPatientIdAsync(string patientUserId)
+        public async Task<ClinicalRecord> GetByIdAsync(string id)
         {
-            return await _clinicalRecordsCollection.Find(x => x.PatientUserId == patientUserId).ToListAsync();
+            var record = await _clinicalRecordsCollection.Find(x => x.Id == id).FirstOrDefaultAsync();
+            if (record is null)
+                throw new Exception("Historia clínica no encontrada.");
+
+            return record;
         }
 
-        public async Task<ClinicalRecordDetailedDto> GetBytPatientDetailAsync(string patientUserId)
+
+        public async Task<List<ClinicalRecord>> GetByPatientIdAsync(string patientUserId)
         {
-           var filter = Builders<ClinicalRecord>.Filter.Eq(x => x.PatientUserId, patientUserId);
+            return await _clinicalRecordsCollection.Find(x => x.PatientId == patientUserId).ToListAsync();
+        }
+
+        public async Task<ClinicalRecordDetailedDto> GetBytPatientDetailAsync(string patientId)
+        {
+            var filter = Builders<ClinicalRecord>.Filter.Eq(x => x.PatientId, patientId);
             var clinicalRecord = await _clinicalRecordsCollection.Find(filter).FirstOrDefaultAsync();
             if (clinicalRecord == null) return null!;
 
             var appointment = await _appointmentsCollection.Find(x => x.Id == clinicalRecord.AppointmentId).FirstOrDefaultAsync();
             var dentist = await _dentistsCollection.Find(x => x.UserId == clinicalRecord.DentistUserId).FirstOrDefaultAsync();
-            var patient = await _patientsCollection.Find(x => x.UserId == clinicalRecord.PatientUserId).FirstOrDefaultAsync();
+            var patient = await _patientsCollection.Find(x => x.Id == clinicalRecord.PatientId).FirstOrDefaultAsync();
             var service = await _servicesCollection.Find(x => x.Id == appointment.ServiceId).FirstOrDefaultAsync();
 
             if (appointment == null || dentist == null || patient == null || service == null) return null!;
@@ -56,7 +67,7 @@ namespace DentalClinicApi.Services
                 Id = clinicalRecord.Id,
                 Diagnosis = clinicalRecord.Diagnosis,
                 Treatment = clinicalRecord.Treatment,
-                Notes = clinicalRecord.Notes,
+                Observations = clinicalRecord.Observations,
                 Appointment = new AppoinmentMiniDtoCr
                 {
                     Id = appointment.Id,
@@ -83,17 +94,64 @@ namespace DentalClinicApi.Services
                     Specialty = dentist.Specialty
                 }
             };
-            
+
         }
-        
+
         public async Task<ClinicalRecord?> GetByAppointmentIdAsync(string appointmentId)
         {
             return await _clinicalRecordsCollection.Find(x => x.AppointmentId == appointmentId).FirstOrDefaultAsync();
         }
 
+        public async Task<ClinicalRecordDetailedDto> GetByAppointmentDetailAsync(string appointmentId)
+        {
+            var clinicalRecord = await _clinicalRecordsCollection.Find(x => x.AppointmentId == appointmentId).FirstOrDefaultAsync();
+            if (clinicalRecord == null)
+                throw new Exception("No se encuentra");
 
+            var appointment = await _appointmentsCollection.Find(x => x.Id == clinicalRecord.AppointmentId).FirstOrDefaultAsync();
+            var patient = await _patientsCollection.Find(x => x.Id == clinicalRecord.PatientId).FirstOrDefaultAsync();
+            var dentist = await _dentistsCollection.Find(x => x.UserId == clinicalRecord.DentistUserId).FirstOrDefaultAsync();
+            var service = await _servicesCollection.Find(x => x.Id == clinicalRecord.ServiceId).FirstOrDefaultAsync();
 
-        public async Task<ClinicalRecord> CreateClinicalRecordAsync(CreateClinicalRecordDto dto)
+            if (appointment == null || patient == null || dentist == null || service == null)
+                throw new Exception("Error");
+
+            return new ClinicalRecordDetailedDto
+            {
+                Id = clinicalRecord.Id,
+                Diagnosis = clinicalRecord.Diagnosis,
+                Treatment = clinicalRecord.Treatment,
+                Observations = clinicalRecord.Observations,
+                Appointment = new AppoinmentMiniDtoCr
+                {
+                    Id = appointment.Id,
+                    Date = appointment.Date,
+                    Status = appointment.Status,
+                    Service = new ServiceDtoCr
+                    {
+                        Id = service.Id,
+                        Name = service.Name,
+                        Price = service.Price
+                    }
+                },
+                Patient = new PatientMiniDtoCr
+                {
+                    Id = patient.Id,
+                    Name = patient.Name,
+                    Email = patient.Email,
+                    Phone = patient.Phone
+                },
+                Dentist = new DentistMiniDtoCr
+                {
+                    Id = dentist.Id,
+                    Name = dentist.Name,
+                    Specialty = dentist.Specialty
+                }
+            };
+
+        }
+
+        public async Task<ClinicalRecord> CreateClinicalRecordAsync(CreateClinicalRecordDto dto, string loggedUserId, string userRole)
         {
             var appointment = await _appointmentsCollection.Find(x => x.Id == dto.AppointmentId).FirstOrDefaultAsync();
             if (appointment == null)
@@ -103,15 +161,34 @@ namespace DentalClinicApi.Services
             if (exists)
                 throw new Exception("Ya existe una historia clínica para esta cita.");
 
+            if (appointment.Status != AppointmentStatus.Completed)
+                throw new Exception("Solo se puede registrar una historia clínica para citas completadas.");
+
+            if (userRole == "Dentist" && appointment.DentistUserId != loggedUserId)
+                throw new Exception("No tienes permiso para registrar historia clínica para esta cita.");
+
+            var patient = await _patientsCollection.Find(p => p.Id == appointment.PatientId).FirstOrDefaultAsync();
+            if (patient is null)
+                throw new Exception("El paciente no existe.");
+
+            var dentist = await _dentistsCollection.Find(d => d.Id == appointment.DentistUserId).FirstOrDefaultAsync();
+            if (dentist is null)
+                throw new Exception("El dentista no existe.");
+
+            var service = await _servicesCollection.Find(s => s.Id == appointment.ServiceId).FirstOrDefaultAsync();
+            if (service is null)
+                throw new Exception("El servicio no existe.");
+
+
             var newClinicalRecord = new ClinicalRecord
             {
                 AppointmentId = dto.AppointmentId,
-                PatientUserId = appointment.PatientUserId,
+                PatientId = appointment.PatientId,
                 DentistUserId = appointment.DentistUserId,
                 ServiceId = appointment.ServiceId,
                 Diagnosis = dto.Diagnosis,
                 Treatment = dto.Treatment,
-                Notes = dto.Notes
+                Observations = dto.Observations
             };
 
             await _clinicalRecordsCollection.InsertOneAsync(newClinicalRecord);
@@ -126,7 +203,7 @@ namespace DentalClinicApi.Services
 
             var appointment = await _appointmentsCollection.Find(x => x.Id == clinicalRecord.AppointmentId).FirstOrDefaultAsync();
             var dentist = await _dentistsCollection.Find(x => x.UserId == clinicalRecord.DentistUserId).FirstOrDefaultAsync();
-            var patient = await _patientsCollection.Find(x => x.UserId == clinicalRecord.PatientUserId).FirstOrDefaultAsync();
+            var patient = await _patientsCollection.Find(x => x.Id == clinicalRecord.PatientId).FirstOrDefaultAsync();
             var service = await _servicesCollection.Find(x => x.Id == appointment.ServiceId).FirstOrDefaultAsync();
 
             if (appointment == null || dentist == null || patient == null || service == null) return null!;
@@ -136,7 +213,7 @@ namespace DentalClinicApi.Services
                 Id = clinicalRecord.Id,
                 Diagnosis = clinicalRecord.Diagnosis,
                 Treatment = clinicalRecord.Treatment,
-                Notes = clinicalRecord.Notes,
+                Observations = clinicalRecord.Observations,
                 Appointment = new AppoinmentMiniDtoCr
                 {
                     Id = appointment.Id,
