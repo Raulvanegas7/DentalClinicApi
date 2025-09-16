@@ -14,7 +14,7 @@ import { TercerSlider } from "./TercerSlider";
 
 export const HeroLanding: React.FC = () => {
     return (
-        <section className="relative z-0 border pb-10  border-gray-300">
+        <section id="inicio" className="relative z-0 border pb-10  border-gray-300">
             <Swiper
                 modules={[Navigation, Pagination, Autoplay]}
                 spaceBetween={30}
