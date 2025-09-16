@@ -53,7 +53,7 @@ export const ServiciosLanding: React.FC = () => {
           <CardServicio
             img="/DolorMuelas.png"
             title="Atención de dolores de muelas"
-            desc="Diagnóstico y tratamiento del dolor dental, que puede deberse a caries profundas, infecciones o problemas en las encías. Brindamos soluciones rápidas para aliviar el malestar y preservar el diente."
+            desc="Diagnóstico y tratamiento del dolor dental, que puede deberse a caries profundas, infecciones o problemas en las encías. Brindamos soluciones rápidas para aliviar el malestar dental."
           />
           <CardServicio
             img="/Brackets.png"

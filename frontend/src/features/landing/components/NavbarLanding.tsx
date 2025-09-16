@@ -5,7 +5,7 @@ import { Home, Briefcase, Users, MessageSquare, Phone } from "lucide-react"
 
 export const NavbarLangin: React.FC = () => {
     return (
-        <nav className="bg-gray-100/95 fixed z-100 w-full flex flex-row justify-around items-center h-[91px] shadow-sm">
+        <nav className="bg-gray-100/95 fixed z-50 w-full flex flex-row justify-around items-center h-[91px] shadow-sm">
             {/* Logo */}
             <section>
                 <Link href="/">
@@ -31,12 +31,15 @@ export const NavbarLangin: React.FC = () => {
                     <li key={href}>
                         <Link 
                             href={href} 
-                            className="group relative flex items-center gap-2 text-[#169EDD] text-lg font-semibold transition-all duration-300 ease-in-out"
+                            className="group relative flex items-center text-[#169EDD] text-lg font-semibold transition-all duration-300 ease-in-out"
                         >
-                            <Icon className="w-5 h-5 text-[#169EDD] transition-transform duration-300 group-hover:scale-110" />
-                            <span className="transition-colors duration-300 group-hover:text-blue-600">
-                                {label}
-                            </span>
+                            {/* Contenedor que escala icono + texto */}
+                            <div className="flex items-center gap-2 transition-transform duration-300 group-hover:scale-110">
+                                <Icon className="w-5 h-5 text-[#169EDD] transition-colors duration-300 group-hover:text-blue-600" />
+                                <span className="transition-colors duration-300 group-hover:text-blue-600">
+                                    {label}
+                                </span>
+                            </div>
                             {/* underline animado */}
                             <span className="absolute left-0 -bottom-1 w-0 h-[2px] bg-blue-500 transition-all duration-300 group-hover:w-full rounded"></span>
                         </Link>
